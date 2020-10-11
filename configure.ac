@@ -86,16 +86,15 @@ PKG_CHECK_MODULES([MDBSQL], [libmdbsql >= 0.7.1], HAVE_MDBSQL=true, HAVE_MDBSQL=
 
 if test "x$HAVE_MDBSQL" = "xtrue"; then
     CFLAGS="$CFLAGS -DSQL"
-    AC_SUBST(MDBSQL_CFLAGS)
-    AC_SUBST(MDBSQL_LIBS)
 fi
+AC_SUBST(MDBSQL_CFLAGS)
+AC_SUBST(MDBSQL_LIBS)
 
-if test "x$HAVE_MDBTOOLS" = "xtrue"; then
-    AC_SUBST(MDBTOOLS_CFLAGS)
-    AC_SUBST(MDBTOOLS_LIBS)
-else
+if test "x$HAVE_MDBTOOLS" != "xtrue"; then
     AC_MSG_ERROR([Could not find MDB Tools, which are required to build gmdb2.])
 fi
+AC_SUBST(MDBTOOLS_CFLAGS)
+AC_SUBST(MDBTOOLS_LIBS)
 
 dnl check for gtk/gnome
 PKG_CHECK_MODULES([GNOME], [gtk+-2.0 >= 2.14 libglade-2.0 libgnomeui-2.0], HAVE_GNOME=true, HAVE_GNOME=false)
@@ -127,15 +126,7 @@ fi
 
 AC_SUBST(HTML_DIR)
 
-gtk_doc_min_version=1.0
-AC_MSG_CHECKING([gtk-doc version >= $gtk_doc_min_version])
-if pkg-config --atleast-version=$gtk_doc_min_version gtk-doc; then
-  AC_MSG_RESULT(yes)
-  GTKDOC=true
-else
-  AC_MSG_RESULT(no)
-  GTKDOC=false
-fi
+PKG_CHECK_EXISTS([gtk-doc >= 1.0], [GTKDOC=true], [GTKDOC=false])
 
 dnl Let people disable the gtk-doc stuff.
 AC_ARG_ENABLE(gtk-doc, AS_HELP_STRING([--enable-gtk-doc], [use gtk-doc to build documentation [default=auto]]), enable_gtk_doc="$enableval", enable_gtk_doc=auto)
