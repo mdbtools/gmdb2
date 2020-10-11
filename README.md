@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mdbtools/gmdb2.svg?branch=main)](https://travis-ci.org/mdbtools/gmdb2)
+
 gmdb2
 --
 
