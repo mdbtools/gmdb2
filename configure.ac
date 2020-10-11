@@ -63,12 +63,6 @@ if test "x$enable_as_needed" != "xno"; then
   esac
 fi
 
-dnl Turn on -Wstrict-prototypes here because AC_CHECK_LIB is dumb
-CFLAGS="$CFLAGS -Wstrict-prototypes"
-
-dnl Conditionally build odbc wide version
-AM_CONDITIONAL(ICONV, test "$am_cv_func_iconv" = "yes")
-
 dnl Testing presence of pkg-config
 AC_MSG_CHECKING([pkg-config m4 macros])
 if test m4_ifdef([PKG_CHECK_MODULES], [yes], [no]) == yes; then
