@@ -8,7 +8,7 @@ jobs:
     addons:
       apt:
         packages:
-        - libglade2-0
+        - libglade2-dev
         - libgnomeui-dev
         - libgtk2.0-dev
         - gnome-doc-utils
@@ -18,7 +18,7 @@ jobs:
     addons:
       apt:
         packages:
-        - libglade2-0
+        - libglade2-dev
         - libgnomeui-dev
         - libgtk2.0-dev
         - gnome-doc-utils
