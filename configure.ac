@@ -80,6 +80,23 @@ pkg-config is required.
 See pkg-config.freedesktop.org])
 fi
 
+dnl check for MDB Tools
+PKG_CHECK_MODULES([MDBTOOLS], [libmdb >= 0.7.1], HAVE_MDBTOOLS=true, HAVE_MDBTOOLS=false)
+PKG_CHECK_MODULES([MDBSQL], [libmdbsql >= 0.7.1], HAVE_MDBSQL=true, HAVE_MDBSQL=false)
+
+if test "x$HAVE_MDBSQL" = "xtrue"; then
+    CFLAGS="$CFLAGS -DSQL"
+    AC_SUBST(MDBSQL_CFLAGS)
+    AC_SUBST(MDBSQL_LIBS)
+fi
+
+if test "x$HAVE_MDBTOOLS" = "xtrue"; then
+    AC_SUBST(MDBTOOLS_CFLAGS)
+    AC_SUBST(MDBTOOLS_LIBS)
+else
+    AC_MSG_ERROR([Could not find MDB Tools, which are required to build gmdb2.])
+fi
+
 dnl check for gtk/gnome
 PKG_CHECK_MODULES([GNOME], [gtk+-2.0 >= 2.14 libglade-2.0 libgnomeui-2.0], HAVE_GNOME=true, HAVE_GNOME=false)
 

@@ -7,8 +7,8 @@
 #include <unistd.h>
 #include <gtk/gtk.h>
 #include <glade/glade.h>
-#include "mdbtools.h"
-#include "mdbsql.h"
+#include <mdbtools.h>
+#include <mdbsql.h>
 
 #ifdef __cplusplus
 extern "C" {

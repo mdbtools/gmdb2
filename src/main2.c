@@ -19,9 +19,9 @@
 #include <gnome.h>
 #include <libgnome/gnome-help.h>
 #include <glade/glade.h>
-#include "mdbtools.h"
-#include "mdbver.h"
-#include "mdbsql.h"
+#include <mdbtools.h>
+#include <mdbver.h>
+#include <mdbsql.h>
 #include "gmdb.h"
 
 GtkWidget *app;

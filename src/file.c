@@ -21,7 +21,6 @@
 #include <gtk/gtkmessagedialog.h>
 #include <libgnome/gnome-i18n.h>
 #include <libgnome/gnome-config.h>
-#include "mdbtools.h"
 #include "gmdb.h"
 
 MdbHandle *mdb;

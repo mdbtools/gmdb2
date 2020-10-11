@@ -11,6 +11,7 @@ jobs:
         - libglade2-dev
         - libgnomeui-dev
         - libgtk2.0-dev
+        - mdbtools-dev
         - scrollkeeper
         - gnome-doc-utils
         - gtk-doc-tools
@@ -22,6 +23,7 @@ jobs:
         - libglade2-dev
         - libgnomeui-dev
         - libgtk2.0-dev
+        - mdbtools-dev
         - scrollkeeper
         - gnome-doc-utils
         - gtk-doc-tools

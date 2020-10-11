@@ -9,7 +9,7 @@ glade_DATA =			\
 	gmdb-prefs.glade	\
 	gmdb-props.glade	\
 	gmdb-tabledef.glade	\
-	../../../COPYING
+	../../COPYING
 
 EXTRA_DIST = $(glade_DATA) 
 
