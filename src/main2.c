@@ -20,7 +20,6 @@
 #include <libgnome/gnome-help.h>
 #include <glade/glade.h>
 #include <mdbtools.h>
-#include <mdbver.h>
 #include <mdbsql.h>
 #include "gmdb.h"
 
@@ -91,8 +90,8 @@ char *license;
 		"documenters", documenters,
 		"logo", pixbuf,
 		"program-name", _("GNOME MDB Viewer"),
-		"version", MDB_VERSION_NO,
-		"website", "http://mdbtools.sourceforge.net/",
+		"version", PACKAGE_VERSION,
+		"website", PACKAGE_URL,
 		"license", license,
 		NULL);
 	g_free(license);
@@ -162,7 +161,7 @@ GtkWidget *gmdb;
 
 	/* Initialize GNOME */
 	/* Initialize gnome program */
-	gnome_program_init ("gmdb", MDB_VERSION_NO,
+	gnome_program_init ("gmdb", VERSION,
 		LIBGNOMEUI_MODULE, argc, argv,
 		GNOME_PARAM_POPT_TABLE, NULL,
 		GNOME_PARAM_HUMAN_READABLE_NAME,
