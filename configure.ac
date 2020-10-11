@@ -141,8 +141,8 @@ reset=$(tput sgr0)
 AC_MSG_NOTICE([])
 AC_MSG_NOTICE([${bold}gmdb2 $VERSION - Configuration summary${reset}])
 AC_MSG_NOTICE([])
-if test x$enable_gtk_doc = xyes; then summary=${bold_green}enabled; else summary=${bold_red}disabled; fi
-AC_MSG_NOTICE([   Gtk doc      : ${summary}${reset}])
+if test x$HAVE_MDBSQL = xtrue; then summary=${bold_green}enabled; else summary=${bold_red}disabled; fi
+AC_MSG_NOTICE([   SQL : ${summary}${reset}])
 if test x$enable_man = xyes; then summary=${bold_green}enabled; else summary=${bold_red}disabled; fi
-AC_MSG_NOTICE([   man          : ${summary}${reset}])
+AC_MSG_NOTICE([   man : ${summary}${reset}])
 AC_MSG_NOTICE([])
