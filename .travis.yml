@@ -33,5 +33,4 @@ before_script:
 
 script:
   - ./configure --disable-silent-rules
-  - cat config.log
   - make
