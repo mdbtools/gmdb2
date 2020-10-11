@@ -1,0 +1,32 @@
+language: c
+dist: bionic
+
+jobs:
+  include:
+  - compiler: clang
+    os: linux
+    addons:
+      apt:
+        packages:
+        - libglade2-0
+        - libgnomeui-dev
+        - libgtk2.0-dev
+        - gnome-doc-utils
+        - gtk-doc-tools
+  - compiler: gcc
+    os: linux
+    addons:
+      apt:
+        packages:
+        - libglade2-0
+        - libgnomeui-dev
+        - libgtk2.0-dev
+        - gnome-doc-utils
+        - gtk-doc-tools
+
+before_script:
+  - autoreconf -i -f -Wno-portability
+
+script:
+  - ./configure --disable-silent-rules
+  - make
