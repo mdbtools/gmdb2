@@ -106,36 +106,6 @@ fi
 AC_SUBST([OPTDIRS])
 
 ##################################################
-# Check for gtk-doc.
-##################################################
-
-AC_ARG_WITH(html-dir,
-  AS_HELP_STRING([--with-html-dir=PATH], [path to installed docs]))
-
-if test "x$with_html_dir" = "x" ; then
-  HTML_DIR='${datadir}/gtk-doc/html'
-else
-  HTML_DIR=$with_html_dir
-fi
-
-AC_SUBST(HTML_DIR)
-
-PKG_CHECK_EXISTS([gtk-doc >= 1.0], [GTKDOC=true], [GTKDOC=false])
-
-dnl Let people disable the gtk-doc stuff.
-AC_ARG_ENABLE(gtk-doc, AS_HELP_STRING([--enable-gtk-doc], [use gtk-doc to build documentation [default=auto]]), enable_gtk_doc="$enableval", enable_gtk_doc=auto)
-
-if test x$enable_gtk_doc = xauto ; then
-  if test x$GTKDOC = xtrue ; then
-    enable_gtk_doc=yes
-  else
-    enable_gtk_doc=no 
-  fi
-fi
-
-AM_CONDITIONAL(ENABLE_GTK_DOC, test x$enable_gtk_doc = xyes)
-
-##################################################
 # Check for txt2man
 ##################################################
 
@@ -148,14 +118,6 @@ if test "$enable_man" = yes; then
   fi
 fi
 AM_CONDITIONAL(ENABLE_MAN, test "$enable_man" = yes)
-
-##################################################
-# Check for docbook
-##################################################
-AM_CONDITIONAL(ENABLE_DOCBOOK, test -n "$DOCBOOK_DSL")
-
-localedir=${datadir}/locale
-AC_SUBST(localedir)
 
 AC_CONFIG_FILES([
 Makefile

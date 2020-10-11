@@ -14,7 +14,6 @@ jobs:
         - mdbtools-dev
         - scrollkeeper
         - gnome-doc-utils
-        - gtk-doc-tools
   - compiler: gcc
     os: linux
     addons:
@@ -26,7 +25,6 @@ jobs:
         - mdbtools-dev
         - scrollkeeper
         - gnome-doc-utils
-        - gtk-doc-tools
 
 before_script:
   - autoreconf -i -f -Wno-portability
