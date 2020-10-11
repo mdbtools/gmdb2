@@ -26,8 +26,6 @@ LT_INIT([win32-dll])
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h limits.h unistd.h)
-AC_CHECK_HEADERS(wordexp.h)
-AC_CHECK_LIB(mswstr, DBLCMapStringW)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -82,28 +80,10 @@ pkg-config is required.
 See pkg-config.freedesktop.org])
 fi
 
-dnl See if GLib is present and wanted
-AC_ARG_ENABLE(glib,
-    AS_HELP_STRING([--disable-glib], [do not link with GLib]),
-        [enable_glib=$enableval], [enable_glib=yes])
-
-if test "$enable_glib" = "yes"; then
-    PKG_CHECK_MODULES([GLIB], [glib-2.0], HAVE_GLIB=true, HAVE_GLIB=false)
-    if test "x$HAVE_GLIB" = "xtrue"; then
-        GLIB_CFLAGS="$GLIB_CFLAGS -DHAVE_GLIB=1"
-    else
-        enable_glib=no
-    fi
-fi
-AM_CONDITIONAL(FAKE_GLIB, test "x$enable_glib" != "xyes")
-
 dnl check for gtk/gnome
 PKG_CHECK_MODULES([GNOME], [gtk+-2.0 >= 2.14 libglade-2.0 libgnomeui-2.0], HAVE_GNOME=true, HAVE_GNOME=false)
 
 GNOME_DOC_INIT
-AC_ARG_ENABLE(gmdb2,
-        AS_HELP_STRING([--disable-gmdb2],[do not build gmdb2]),
-        [build_gmdb2=$enableval], [build_gmdb2=yes])
 
 if test "x$HAVE_GNOME" = "xtrue"; then
     AC_SUBST(GNOME_CFLAGS)
@@ -197,12 +177,8 @@ bold_green=$(tput bold)$(tput setf 2)
 bold=$(tput bold)
 reset=$(tput sgr0)
 AC_MSG_NOTICE([])
-AC_MSG_NOTICE([${bold}MDB Tools $VERSION - Configuration summary${reset}])
+AC_MSG_NOTICE([${bold}gmdb2 $VERSION - Configuration summary${reset}])
 AC_MSG_NOTICE([])
-if test x$enable_glib = xyes; then summary=${bold_green}enabled; else summary=${bold_red}disabled; fi
-AC_MSG_NOTICE([   GLib         : ${summary}${reset}])
-if test x$build_gmdb2 = xyes; then summary=${bold_green}enabled; else summary=${bold_red}disabled; fi
-AC_MSG_NOTICE([   UI           : ${summary}${reset}])
 if test x$enable_gtk_doc = xyes; then summary=${bold_green}enabled; else summary=${bold_red}disabled; fi
 AC_MSG_NOTICE([   Gtk doc      : ${summary}${reset}])
 if test x$enable_man = xyes; then summary=${bold_green}enabled; else summary=${bold_red}disabled; fi
