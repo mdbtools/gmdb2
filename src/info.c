@@ -85,7 +85,7 @@ MdbCatalogEntry *entry = mdb_get_catalogentry_by_name(mdb, "SummaryInfo");
 	label = glade_xml_get_widget (propswin_xml, "props_encrypted");
 	gtk_label_set_text(GTK_LABEL(label), mdb->f->db_key ? "Yes" : "No");	
 
-	assert( fstat(mdb->f->fd, &st)!=-1 );
+	assert( fstat(fileno(mdb->f->stream), &st)!=-1 );
 	sprintf(tmpstr, "%zd K", (size_t)(st.st_size/1024));
 	label = glade_xml_get_widget (propswin_xml, "props_filesize");
 	gtk_label_set_text(GTK_LABEL(label), tmpstr);	
@@ -101,7 +101,7 @@ MdbCatalogEntry *entry = mdb_get_catalogentry_by_name(mdb, "SummaryInfo");
 	if (entry && entry->props && entry->props->len)
 	{
 		// There is only one MdbProps for that kind of entry
-		MdbProperties *props = g_array_index(entry->props, MdbProperties*, 0);
+		MdbProperties *props = g_ptr_array_index(entry->props, 0);
 		const char *propval;
 		
 		propval = g_hash_table_lookup(props->hash, "Title");
