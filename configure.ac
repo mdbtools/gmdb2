@@ -88,6 +88,8 @@ fi
 AC_SUBST(GNOME_CFLAGS)
 AC_SUBST(GNOME_LIBS)
 
+AC_DEFINE(HAVE_GLIB, 1, [glib check])
+
 GNOME_DOC_INIT
 
 ##################################################
