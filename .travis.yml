@@ -27,7 +27,7 @@ jobs:
 before_script:
   - autoreconf -i -f -Wno-portability
   - git clone -b dev https://github.com/mdbtools/mdbtools.git mdbtools
-  - cd mdbtools && ./configure && make && sudo make install && cd ..
+  - cd mdbtools && autoreconf -i -f && ./configure && make && sudo make install && cd ..
 
 script:
   - ./configure --disable-silent-rules
