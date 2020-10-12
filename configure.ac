@@ -5,14 +5,6 @@ AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_SRCDIR(src/gladefiles/gmdb.glade)
 AM_INIT_AUTOMAKE([foreign])
 
-MDBTOOLS_VERSION_MAJOR=0
-MDBTOOLS_VERSION_MINOR=9
-MDBTOOLS_VERSION_MICRO=0
-
-# Update this logic when the major version changes
-VERSION_INFO=`expr $MDBTOOLS_VERSION_MINOR - 6`:$MDBTOOLS_VERSION_MICRO
-AC_SUBST(VERSION_INFO)
-
 AM_MAINTAINER_MODE([enable])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
@@ -25,14 +17,11 @@ LT_INIT([win32-dll])
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(fcntl.h limits.h unistd.h)
+AC_CHECK_HEADERS(unistd.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_TYPE_SIZE_T
-
-dnl no optional stuff by default
-OPTDIRS=""
 
 dnl ---------------------------------------------------------------------
 dnl Compile time options
@@ -98,12 +87,9 @@ GNOME_DOC_INIT
 if test "x$HAVE_GNOME" = "xtrue"; then
     AC_SUBST(GNOME_CFLAGS)
     AC_SUBST(GNOME_LIBS)
-    OPTDIRS="$OPTDIRS gmdb2"
 else
     AC_MSG_ERROR([Could not find GNOME libraries, which are required to build gmdb2.])
 fi
-
-AC_SUBST([OPTDIRS])
 
 ##################################################
 # Check for txt2man
@@ -127,7 +113,6 @@ src/gladefiles/Makefile
 src/pixmaps/Makefile
 src/help/Makefile])
 AC_OUTPUT
-dnl doc/reference/libmdb/Makefile])
 
 ##################################################
 # Print summary
