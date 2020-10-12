@@ -64,8 +64,8 @@ See pkg-config.freedesktop.org])
 fi
 
 dnl check for MDB Tools
-PKG_CHECK_MODULES([MDBTOOLS], [libmdb >= 0.7.1], HAVE_MDBTOOLS=true, HAVE_MDBTOOLS=false)
-PKG_CHECK_MODULES([MDBSQL], [libmdbsql >= 0.7.1], HAVE_MDBSQL=true, HAVE_MDBSQL=false)
+PKG_CHECK_MODULES([MDBTOOLS], [libmdb >= 0.9.0], HAVE_MDBTOOLS=true, HAVE_MDBTOOLS=false)
+PKG_CHECK_MODULES([MDBSQL], [libmdbsql >= 0.9.0], HAVE_MDBSQL=true, HAVE_MDBSQL=false)
 
 if test "x$HAVE_MDBSQL" = "xtrue"; then
     CFLAGS="$CFLAGS -DSQL"
@@ -82,14 +82,13 @@ AC_SUBST(MDBTOOLS_LIBS)
 dnl check for gtk/gnome
 PKG_CHECK_MODULES([GNOME], [gtk+-2.0 >= 2.14 libglade-2.0 libgnomeui-2.0], HAVE_GNOME=true, HAVE_GNOME=false)
 
-GNOME_DOC_INIT
-
-if test "x$HAVE_GNOME" = "xtrue"; then
-    AC_SUBST(GNOME_CFLAGS)
-    AC_SUBST(GNOME_LIBS)
-else
+if test "x$HAVE_GNOME" != "xtrue"; then
     AC_MSG_ERROR([Could not find GNOME libraries, which are required to build gmdb2.])
 fi
+AC_SUBST(GNOME_CFLAGS)
+AC_SUBST(GNOME_LIBS)
+
+GNOME_DOC_INIT
 
 ##################################################
 # Check for txt2man
