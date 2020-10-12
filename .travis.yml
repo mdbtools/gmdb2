@@ -11,7 +11,6 @@ jobs:
         - libglade2-dev
         - libgnomeui-dev
         - libgtk2.0-dev
-        - mdbtools-dev
         - scrollkeeper
         - gnome-doc-utils
   - compiler: gcc
@@ -22,12 +21,13 @@ jobs:
         - libglade2-dev
         - libgnomeui-dev
         - libgtk2.0-dev
-        - mdbtools-dev
         - scrollkeeper
         - gnome-doc-utils
 
 before_script:
   - autoreconf -i -f -Wno-portability
+  - git clone -b dev https://github.com/mdbtools/mdbtools.git mdbtools
+  - cd mdbtools && ./configure && make && sudo make install && cd ..
 
 script:
   - ./configure --disable-silent-rules
