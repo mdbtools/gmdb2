@@ -57,7 +57,7 @@ GtkWidget *parent;
 GdkPixbuf *pixbuf=NULL;
 FILE *flicense;
 guint32 licenselen;
-char *license;
+char *license = NULL;
 
 	parent = gtk_widget_get_toplevel (button);
 	if (!GTK_WIDGET_TOPLEVEL (parent))
@@ -73,12 +73,16 @@ char *license;
 		licenselen = ftell(flicense);
 		fseek(flicense, 0, SEEK_SET);
 		license = g_malloc(licenselen+1);
-		fread(license, 1, licenselen, flicense);
-		license[licenselen] = 0;
+		if (fread(license, 1, licenselen, flicense) == licenselen) {
+            license[licenselen] = 0;
+        } else {
+            fprintf(stderr, "Can't read " GMDB_ICONDIR "COPYING\n");
+            g_free(license);
+            license = NULL;
+        }
 		fclose(flicense);
 	} else {
 		fprintf(stderr, "Can't open " GMDB_ICONDIR "COPYING\n");
-		license = NULL;
 	}
 
   	gtk_show_about_dialog ((GtkWindow*)parent,
