@@ -140,7 +140,6 @@ refresh_available_options() {
 	GtkComboBox *combobox; 
 	GtkWidget *checkbox;
 	guint32 capabilities;
-	extern GHashTable *mdb_backends; /* FIXME */
 	MdbBackend *backend_obj;
 	int i;
 
@@ -156,7 +155,7 @@ refresh_available_options() {
 	else if (!strcmp(backend_name,"SQLite")) strcpy(backend,"sqlite");
 	else strcpy(backend,"access");
 
-	backend_obj = (MdbBackend *) g_hash_table_lookup(mdb_backends, backend);
+	backend_obj = (MdbBackend *) g_hash_table_lookup(mdb->backends, backend);
 	//printf("backend_obj: %p\n", backend_obj);
 
 	capabilities = backend_obj->capabilities;
