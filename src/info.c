@@ -36,7 +36,6 @@ GtkWidget *propswin, *label;
 GladeXML *propswin_xml;
 gchar title[100];
 gchar tmpstr[20];
-int i;
 struct stat st;
 char* version;
 MdbCatalogEntry *entry = mdb_get_catalogentry_by_name(mdb, "SummaryInfo");
