@@ -20,6 +20,7 @@
 
 extern GtkWidget *app;
 extern MdbHandle *mdb;
+extern gchar *mdb_filename;
 
 typedef struct GMdbInfoWindow {
 	GtkWidget *window;
@@ -35,7 +36,6 @@ GtkWidget *propswin, *label;
 GladeXML *propswin_xml;
 gchar title[100];
 gchar tmpstr[20];
-gchar *filename, *filepath;
 int i;
 struct stat st;
 char* version;
@@ -46,16 +46,12 @@ MdbCatalogEntry *entry = mdb_get_catalogentry_by_name(mdb, "SummaryInfo");
 	/* connect the signals in the interface */
 	glade_xml_signal_autoconnect(propswin_xml);
 	
-	filepath = g_strdup(mdb->f->filename);
-	for (i=strlen(filepath);i>0 && filepath[i-1]!='/';i--);
-	filename=&filepath[i];
-	
 	propswin = glade_xml_get_widget (propswin_xml, "props_dialog");
-	g_snprintf(title, 100, "%s Properties",filename);
+	g_snprintf(title, sizeof(title), "%s Properties", mdb_filename);
 	gtk_window_set_title(GTK_WINDOW(propswin), title);
 		
 	label = glade_xml_get_widget (propswin_xml, "props_filename");
-	gtk_label_set_text(GTK_LABEL(label), filename);	
+	gtk_label_set_text(GTK_LABEL(label), mdb_filename);
 		
 	label = glade_xml_get_widget (propswin_xml, "props_jetver");
 	switch(mdb->f->jet_version) {
@@ -120,8 +116,6 @@ MdbCatalogEntry *entry = mdb_get_catalogentry_by_name(mdb, "SummaryInfo");
 			gtk_label_set_text(GTK_LABEL(label), propval);
 		}
 	}
-
-	g_free(filepath);
 
 	return propswin;
 }

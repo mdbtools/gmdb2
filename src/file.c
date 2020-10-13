@@ -24,6 +24,7 @@
 #include "gmdb.h"
 
 MdbHandle *mdb;
+gchar *mdb_filename;
 extern int main_show_debug;
 extern GladeXML *mainwin_xml;
 
@@ -190,7 +191,6 @@ gmdb_file_open(gchar *file_path)
 	GtkWidget *win;
 	GdkPixbuf *pixbuf;
 	GtkTreeModel *store;
-	gchar *file_name;
 	gchar title[100];
 	int i;
 	gchar* pbnames[] = { GMDB_ICONDIR "form_big.xpm", GMDB_ICONDIR "macro_big.xpm",
@@ -231,10 +231,10 @@ gmdb_file_open(gchar *file_path)
 	//if (main_show_debug) gmdb_debug_init(mdb);
 	
 	for (i=strlen(file_path);i>0 && file_path[i-1]!='/';i--);
-	file_name=&file_path[i];
+	mdb_filename=g_strdup(&file_path[i]);
 
 	win = (GtkWidget *) glade_xml_get_widget (mainwin_xml, "gmdb");
-	g_snprintf(title, 100, "%s - MDB File Viewer",file_name);
+	g_snprintf(title, sizeof(title), "%s - MDB File Viewer", mdb_filename);
 	gtk_window_set_title(GTK_WINDOW(win), title);
 
 	for (i = 0; i < MAX_ACTIONITEMS; ++i) {
