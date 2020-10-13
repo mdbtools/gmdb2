@@ -9,9 +9,4 @@ AM_CFLAGS	=	-I$(top_srcdir)/include $(GNOME_CFLAGS) $(MDBSQL_CFLAGS) $(MDBTOOLS_
         -DGMDB_ICONDIR="\"$(datadir)/gmdb/glade/\""        \
         -DGMDB_GLADEDIR="\"$(datadir)/gmdb/glade/\"" 
 
-#LDADD	=	../libmdb/libmdb.la 
-LDADD = ../libmdb/libmdb.la ../sql/libmdbsql.la
-#if SQL
-#gmdb_LDADD = ../libmdb/libmdb.la ../sql/libmdbsql.la
-#endif
 EXTRA_DIST = gmdb.desktop gmdb.bash-completion
