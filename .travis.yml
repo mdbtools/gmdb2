@@ -21,4 +21,4 @@ before_script:
 
 script:
   - ./configure --disable-silent-rules
-  - make
+  - make distcheck
