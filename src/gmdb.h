@@ -89,7 +89,6 @@ int gmdb_export_get_binmode(GladeXML *xml);
 int gmdb_export_get_headers(GladeXML *xml);
 gchar *gmdb_export_get_filepath(GladeXML *xml);
 void gmdb_export_help_cb(GtkWidget *w, gpointer data);
-void gmdb_print_col(FILE *outfile, gchar *col_val, int quote_text, int col_type, int bin_len, char *quote_char, char *escape_char, int bin_mode);
 void gmdb_table_export_button_cb(GtkWidget *w, gpointer data);
 
 extern MdbSQL *sql;

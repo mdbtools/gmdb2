@@ -137,7 +137,7 @@ gmdb_sql_write_rslt_cb(GtkWidget *w, GladeXML *xml)
 			if (i>0)
 				fputs(delimiter, outfile);
 			sqlcol = g_ptr_array_index(sql->columns,i);
-			gmdb_print_col(outfile, sqlcol->name, quotechar[0]!='\0', MDB_TEXT, 0, quotechar, escape_char, bin_mode);
+			mdb_print_col(outfile, sqlcol->name, quotechar[0]!='\0', MDB_TEXT, 0, quotechar, escape_char, bin_mode);
 		}
 	}
 
@@ -167,7 +167,7 @@ gmdb_sql_write_rslt_cb(GtkWidget *w, GladeXML *xml)
 					value = bound_values[i];
 					length = bound_lens[i];
 				}
-				gmdb_print_col(outfile, value, quotechar[0]!='\0', col->col_type, length, quotechar, escape_char, bin_mode);
+				mdb_print_col(outfile, value, quotechar[0]!='\0', col->col_type, length, quotechar, escape_char, bin_mode);
 				if (col->col_type == MDB_OLE)
 					free(value);
 			}
