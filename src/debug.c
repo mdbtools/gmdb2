@@ -23,7 +23,6 @@
  *   gboolean *dissect: whether dissecting is turned on
  */ 
 
-#include <glade/glade.h>
 #include <gtk/gtkmessagedialog.h>
 #include <libgnome/gnome-i18n.h>
 #include "gmdb.h"
@@ -390,7 +389,7 @@ gmdb_get_max_page(MdbHandle *mdb)
 {
 struct stat st;
 
-	assert( fstat(mdb->f->fd, &st)!=-1 );
+	assert( fstat(fileno(mdb->f->stream), &st)!=-1 );
 	return (st.st_size/mdb->fmt->pg_size)-1;
 }
 static gchar *

@@ -17,7 +17,6 @@
  */
 
 #include <gtk/gtkiconview.h>
-#include <glade/glade.h>
 #include "gmdb.h"
 
 extern GladeXML* mainwin_xml;
