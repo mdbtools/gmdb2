@@ -3,16 +3,6 @@ dist: bionic
 
 jobs:
   include:
-  - compiler: clang
-    os: linux
-    addons:
-      apt:
-        packages:
-        - libglade2-dev
-        - libgnomeui-dev
-        - libgtk2.0-dev
-        - scrollkeeper
-        - gnome-doc-utils
   - compiler: gcc
     os: linux
     addons:
