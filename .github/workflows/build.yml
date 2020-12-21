@@ -10,7 +10,7 @@ jobs:
       - name: Autoconf
         run: autoreconf -i -f -Wno-portability
       - name: Fetch mdbtools
-        run: git clone -b dev https://github.com/mdbtools/mdbtools.git mdbtools
+        run: git clone -b master https://github.com/mdbtools/mdbtools.git mdbtools
       - name: Build mdbtools
         run: cd mdbtools && autoreconf -i -f && ./configure && make && sudo make install && cd ..
       - name: Configure
