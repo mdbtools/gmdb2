@@ -24,3 +24,8 @@ libtool
 types.h
 src/gmdb2
 src/help/gmdb-C.omf
+
+
+## apidocs docs related
+public/
+.sass-cache/

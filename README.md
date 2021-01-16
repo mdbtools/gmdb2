@@ -19,3 +19,6 @@ Building requires autotools:
 This standalone package is considered beta software. For a stable release,
 download MDB Tools version 0.7.1 or earlier and compile with the above
 libraries installed.
+
+
+![Screenshot](https://mdbtools.github.io/static/images/gmdb2screenshot.png)
