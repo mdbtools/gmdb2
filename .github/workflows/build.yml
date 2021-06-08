@@ -2,7 +2,7 @@ name: build
 on: [ push, pull_request ]
 jobs:
   linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - name: Install packages
         run: sudo apt install libglade2-dev libgnomeui-dev libgtk2.0-dev scrollkeeper gnome-doc-utils
