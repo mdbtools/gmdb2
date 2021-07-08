@@ -16,12 +16,13 @@ m4_pattern_allow([AM_PROG_AR], [AM_PROG_AR])
 LT_INIT([win32-dll])
 
 dnl Checks for header files.
-AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_TYPE_SIZE_T
+
+AM_ICONV
 
 dnl ---------------------------------------------------------------------
 dnl Compile time options
