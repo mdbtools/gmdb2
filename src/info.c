@@ -81,15 +81,15 @@ MdbCatalogEntry *entry = mdb_get_catalogentry_by_name(mdb, "SummaryInfo");
 	gtk_label_set_text(GTK_LABEL(label), mdb->f->db_key ? "Yes" : "No");	
 
 	assert( fstat(fileno(mdb->f->stream), &st)!=-1 );
-	sprintf(tmpstr, "%zd K", (size_t)(st.st_size/1024));
+	snprintf(tmpstr, sizeof(tmpstr), "%zd K", (size_t)(st.st_size/1024));
 	label = glade_xml_get_widget (propswin_xml, "props_filesize");
 	gtk_label_set_text(GTK_LABEL(label), tmpstr);	
 		
-	sprintf(tmpstr, "%zd", (size_t)(st.st_size / mdb->fmt->pg_size));
+	snprintf(tmpstr, sizeof(tmpstr), "%zd", (size_t)(st.st_size / mdb->fmt->pg_size));
 	label = glade_xml_get_widget (propswin_xml, "props_numpages");
 	gtk_label_set_text(GTK_LABEL(label), tmpstr);	
 
-	sprintf(tmpstr, "%d", mdb->num_catalog);
+	snprintf(tmpstr, sizeof(tmpstr), "%d", mdb->num_catalog);
 	label = glade_xml_get_widget (propswin_xml, "props_numobjs");
 	gtk_label_set_text(GTK_LABEL(label), tmpstr);	
 

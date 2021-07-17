@@ -351,17 +351,17 @@ gmdb_debug_display(GladeXML *xml, guint32 page)
 	tbuf = g_malloc0( (mdb->fmt->pg_size / 16) * sizeof(line));
 	i = 0;
 	while (i<mdb->fmt->pg_size) {
-		sprintf(line,"%06x  ", i);
+		snprintf(line, sizeof(line), "%06x  ", i);
 
 		for(j=0; j<16; j++) {
-			sprintf(field, "%02x ", ((unsigned char*)fbuf)[i+j]);
+			snprintf(field, sizeof(field), "%02x ", ((unsigned char*)fbuf)[i+j]);
 			strcat(line,field);
 		}
 
 		strcat(line, "  |");
 
 		for(j=0; j<16; j++) {
-			sprintf(field, "%c", (isprint(fbuf[i+j])) ? fbuf[i+j] : '.');
+			snprintf(field, sizeof(field), "%c", (isprint(fbuf[i+j])) ? fbuf[i+j] : '.');
 			strcat(line,field);
 		}
 		strcat(line, "|\n");

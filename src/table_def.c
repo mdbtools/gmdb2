@@ -320,7 +320,7 @@ GtkEntry *entry;
 	//case MDB_COMPLEX:
 		gtk_widget_show(GTK_WIDGET(label));
 		gtk_widget_show(GTK_WIDGET(entry));
-		sprintf(tmp, "%d", size);
+		snprintf(tmp, sizeof(tmp), "%d", size);
 		gtk_entry_set_text(entry, tmp);
 		break;
 	default:
@@ -348,7 +348,7 @@ GtkEntry *entry;
 	//case MDB_COMPLEX:
 		gtk_widget_show(GTK_WIDGET(label));
 		gtk_widget_show(GTK_WIDGET(entry));
-		sprintf(tmp, "%d", size);
+		snprintf(tmp, sizeof(tmp), "%d", size);
 		gtk_entry_set_text(entry, format ? format : "");
 		break;
 	default:
@@ -368,7 +368,7 @@ GtkEntry *entry;
 		gtk_widget_show(GTK_WIDGET(label));
 		gtk_widget_show(GTK_WIDGET(entry));
 		if (decimalplaces) {
-			sprintf(tmp, "%d", decimalplaces);
+			snprintf(tmp, sizeof(tmp), "%d", decimalplaces);
 			gtk_entry_set_text(entry, tmp);
 		} else
 			gtk_entry_set_text(entry, "");

@@ -133,8 +133,8 @@ int i;
 gchar *text, *text2;
 
 	for (i=4;i>=1;i--) {	
-		sprintf(menuname, "menu_recent%d",i);
-		sprintf(cfgname, "/gmdb/RecentFiles/menu_recent%d.basename",i);
+		snprintf(menuname, sizeof(menuname), "menu_recent%d",i);
+		snprintf(cfgname, sizeof(cfgname), "/gmdb/RecentFiles/menu_recent%d.basename",i);
 		menuitem = glade_xml_get_widget (mainwin_xml, menuname);
 		menulabel = gtk_bin_get_child(GTK_BIN(menuitem));
 		text = gnome_config_get_string(cfgname);

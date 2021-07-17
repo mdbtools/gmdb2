@@ -40,7 +40,7 @@ static void gmdb_file_open_recent(gchar *menuname)
 { 
 gchar *text, cfgname[100];
 
-	sprintf(cfgname,"/gmdb/RecentFiles/%s.filepath", menuname);
+	snprintf(cfgname, sizeof(cfgname), "/gmdb/RecentFiles/%s.filepath", menuname);
 	text = gnome_config_get_string(cfgname);
 	gmdb_file_open(text);
 	g_free(text);
@@ -58,7 +58,7 @@ gchar *text, cfgname[100];
 int i, index=0;
 
 	for (i=1; i<=4; i++) {
-		sprintf(cfgname,"/gmdb/RecentFiles/menu_recent%d.filepath", i);
+		snprintf(cfgname, sizeof(cfgname), "/gmdb/RecentFiles/menu_recent%d.filepath", i);
 		text = gnome_config_get_string(cfgname);
 		if (text && !strcmp(text,file_path)) {
 			index = i;
@@ -74,20 +74,20 @@ int i, index=0;
 	if (!index) index=4;
 
 	for (i=1; i<index; i++) {
-		sprintf(cfgname, "/gmdb/RecentFiles/menu_recent%d.filepath", i);
+		snprintf(cfgname, sizeof(cfgname), "/gmdb/RecentFiles/menu_recent%d.filepath", i);
 		text = gnome_config_get_string(cfgname);
 		if (text) {
-			sprintf(cfgname, 
+			snprintf(cfgname, sizeof(cfgname),
 				"/gmdb/RecentFiles/menu_recent%d.filepath", 
 				i+1);
 			gnome_config_set_string(cfgname, text);
 			g_free(text);
 
-			sprintf(cfgname, 
+			snprintf(cfgname, sizeof(cfgname),
 				"/gmdb/RecentFiles/menu_recent%d.basename", 
 				i);
 			text = gnome_config_get_string(cfgname);
-			sprintf(cfgname, 
+			snprintf(cfgname, sizeof(cfgname),
 				"/gmdb/RecentFiles/menu_recent%d.basename", 
 				i+1);
 			gnome_config_set_string(cfgname, text);
