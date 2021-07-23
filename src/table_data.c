@@ -22,8 +22,8 @@ extern GtkWidget *app;
 extern MdbHandle *mdb;
 
 typedef struct GMdbDataWindow {
-	gchar table_name[MDB_MAX_OBJ_NAME];
 	GtkWidget *window;
+	gchar table_name[MDB_MAX_OBJ_NAME+1];
 } GMdbDataWindow;
 
 static GList *window_list;
