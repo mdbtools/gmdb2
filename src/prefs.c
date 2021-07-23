@@ -16,99 +16,69 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <libgnome/gnome-config.h>
-#include <libgnome/gnome-help.h>
 #include "gmdb.h"
 
 extern GtkWidget *app;
 extern MdbHandle *mdb;
+extern GSettings *settings;
 
-GladeXML *prefswin_xml;
+GtkBuilder *prefswin_xml;
 
 unsigned long
 gmdb_prefs_get_maxrows()
 {
-	gchar *str;
-
-        str = gnome_config_get_string("/gmdb/prefs/maxrows");
-	if (!str || !strlen(str)) 
-		return 1000;
-	else 
-		return atol(str);
+    return g_settings_get_int(settings, "maxrows");
 }
 
 /* callbacks */
-static void
-gmdb_prefs_help_cb(GtkWidget *w, gpointer data)
-{
-	GError *error = NULL;
-
-	gnome_help_display("gmdb.xml", "gmdb-prefs", &error);
-	if (error != NULL) {
-		g_warning ("%s", error->message);
-		g_error_free (error);
-	}
-}
-
-static void
-gmdb_prefs_save_cb(GtkWidget *w, GladeXML *xml)
+void
+gmdb_prefs_save_cb(GtkWidget *w, gpointer user_data)
 {
 	GtkWidget *entry;
 	GtkWidget *win;
 	gchar *str;
 
-	entry = glade_xml_get_widget (xml, "maxrows_entry");
+	entry = GTK_WIDGET(gtk_builder_get_object(prefswin_xml, "maxrows_entry"));
 	str = (gchar *) gtk_entry_get_text(GTK_ENTRY(entry));
 	printf("str = %s\n",str);
-	gnome_config_set_string("/gmdb/prefs/maxrows", str);
-	gnome_config_sync();
-	win = glade_xml_get_widget (xml, "prefs_dialog");
+    g_settings_set_int(settings, "maxrows", atol(str));
+	g_settings_sync();
+	win = GTK_WIDGET(gtk_builder_get_object(prefswin_xml, "prefs_dialog"));
 	if (win) gtk_widget_destroy(win);
 }
 
-static void
-gmdb_prefs_cancel_cb(GtkWidget *w, GladeXML *xml)
+void
+gmdb_prefs_cancel_cb(GtkWidget *w, gpointer user_data)
 {
 	GtkWidget *win;
 
-	win = glade_xml_get_widget (xml, "prefs_dialog");
+	win = GTK_WIDGET(gtk_builder_get_object(prefswin_xml, "prefs_dialog"));
 	if (win) gtk_widget_destroy(win);
 }
 
 GtkWidget *
 gmdb_prefs_new()
 {
-	GtkWidget *prefswin, *button;
-	GtkWidget *entry;
+	GtkWidget *prefswin;
+	GtkEntry *entry;
 	gchar *str;
+    GError *error = NULL;
 
 	/* load the interface */
-	prefswin_xml = glade_xml_new(GMDB_GLADEDIR "gmdb-prefs.glade", NULL, NULL);
+	prefswin_xml = gtk_builder_new();
+    if (!gtk_builder_add_from_file(prefswin_xml, GMDB_UIDIR "gmdb-prefs.ui", NULL)) {
+        g_warning("Error adding " GMDB_UIDIR "gmdb-prefs.ui: %s", error->message);
+        g_error_free(error);
+    }
 	/* connect the signals in the interface */
-	glade_xml_signal_autoconnect(prefswin_xml);
+	gtk_builder_connect_signals(prefswin_xml, NULL);
 
-	entry = glade_xml_get_widget (prefswin_xml, "maxrows_entry");
+	entry = GTK_ENTRY(gtk_builder_get_object(prefswin_xml, "maxrows_entry"));
 
-	button = glade_xml_get_widget (prefswin_xml, "cancel_button");
-	g_signal_connect (G_OBJECT (button), "clicked",
-		G_CALLBACK (gmdb_prefs_cancel_cb), prefswin_xml);
+	str = g_strdup_printf("%d", g_settings_get_int(settings, "maxrows"));
+	gtk_entry_set_text(entry, str);
+    g_free(str);
 
-	button = glade_xml_get_widget (prefswin_xml, "ok_button");
-	g_signal_connect (G_OBJECT (button), "clicked",
-		G_CALLBACK (gmdb_prefs_save_cb), prefswin_xml);
-
-	button = glade_xml_get_widget (prefswin_xml, "help_button");
-	g_signal_connect (G_OBJECT (button), "clicked",
-		G_CALLBACK (gmdb_prefs_help_cb), prefswin_xml);
-
-	str = gnome_config_get_string("/gmdb/prefs/maxrows");
-	if (!str || !strlen(str)) {
-		str = "1000";
-		gnome_config_set_string("/gmdb/prefs/maxrows", str);
-		gnome_config_sync();
-	}
-	gtk_entry_set_text(GTK_ENTRY(entry), str);
-
-	prefswin = glade_xml_get_widget (prefswin_xml, "prefs_dialog");
+	prefswin = GTK_WIDGET(gtk_builder_get_object(prefswin_xml, "prefs_dialog"));
 	return prefswin;
 }

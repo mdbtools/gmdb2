@@ -1,8 +1,8 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([gmdb2],[0.9.0-beta1],[https://github.com/mdbtools/gmdb2/issues],[],[https://github.com/mdbtools/gmdb2])
+AC_INIT([gmdb2],[0.9.0-beta2],[https://github.com/mdbtools/gmdb2/issues],[],[https://github.com/mdbtools/gmdb2])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
-AC_CONFIG_SRCDIR(src/gladefiles/gmdb.glade)
+AC_CONFIG_SRCDIR(src/uifiles/gmdb.ui)
 AM_INIT_AUTOMAKE([foreign])
 
 AM_MAINTAINER_MODE([enable])
@@ -31,8 +31,6 @@ dnl ---------------------------------------------------------------------
 CFLAGS="$CFLAGS -Wall -Werror"
 AS_CASE([$host],
         [*mingw*|*cygwin*], [LDFLAGS="$LDFLAGS -no-undefined"], [])
-AS_CASE([$host],
-        [*mingw*], [LDFLAGS="$LDFLAGS -lWs2_32"], [])
 
 dnl Enable -Wl,--as-needed by default to prevent overlinking
 
@@ -81,17 +79,17 @@ AC_SUBST(MDBTOOLS_CFLAGS)
 AC_SUBST(MDBTOOLS_LIBS)
 
 dnl check for gtk/gnome
-PKG_CHECK_MODULES([GNOME], [gtk+-2.0 >= 2.14 libglade-2.0 libgnomeui-2.0], HAVE_GNOME=true, HAVE_GNOME=false)
 
-if test "x$HAVE_GNOME" != "xtrue"; then
-    AC_MSG_ERROR([Could not find GNOME libraries, which are required to build gmdb2.])
+PKG_CHECK_MODULES([GTK3], [gtk+-3.0], HAVE_GTK3=true, HAVE_GTK3=false)
+if test "x$HAVE_GTK3" != "xtrue"; then
+    AC_MSG_ERROR([Could not find GTK3 libraries, which are required to build gmdb2.])
 fi
-AC_SUBST(GNOME_CFLAGS)
-AC_SUBST(GNOME_LIBS)
+AC_SUBST(GTK3_CFLAGS)
+AC_SUBST(GTK3_LIBS)
 
 AC_DEFINE(HAVE_GLIB, 1, [glib check])
 
-GNOME_DOC_INIT
+GLIB_GSETTINGS
 
 ##################################################
 # Check for txt2man
@@ -111,9 +109,8 @@ AC_CONFIG_FILES([
 Makefile
 doc/Makefile
 src/Makefile
-src/gladefiles/Makefile
-src/pixmaps/Makefile
-src/help/Makefile])
+src/uifiles/Makefile
+src/pixmaps/Makefile])
 AC_OUTPUT
 
 ##################################################
@@ -129,7 +126,7 @@ AC_MSG_NOTICE([])
 AC_MSG_NOTICE([${bold}gmdb2 $VERSION - Configuration summary${reset}])
 AC_MSG_NOTICE([])
 if test x$HAVE_MDBSQL = xtrue; then summary=${bold_green}enabled; else summary=${bold_red}disabled; fi
-AC_MSG_NOTICE([   SQL : ${summary}${reset}])
+AC_MSG_NOTICE([ SQL : ${summary}${reset}])
 if test x$enable_man = xyes; then summary=${bold_green}enabled; else summary=${bold_red}disabled; fi
-AC_MSG_NOTICE([   man : ${summary}${reset}])
+AC_MSG_NOTICE([ man : ${summary}${reset}])
 AC_MSG_NOTICE([])

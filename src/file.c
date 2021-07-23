@@ -16,17 +16,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <gtk/gtkiconview.h>
-#include <gtk/gtkliststore.h>
-#include <gtk/gtkmessagedialog.h>
-#include <libgnome/gnome-i18n.h>
-#include <libgnome/gnome-config.h>
 #include "gmdb.h"
 
 MdbHandle *mdb;
 gchar *mdb_filename;
 extern int main_show_debug;
-extern GladeXML *mainwin_xml;
+extern GtkBuilder *mainwin_xml;
+extern GSettings *settings;
 
 #define MAX_ACTIONITEMS 9
 #define MAX_ICONVIEWS 6
@@ -40,16 +36,16 @@ static void gmdb_file_open_recent(gchar *menuname)
 { 
 gchar *text, cfgname[100];
 
-	snprintf(cfgname, sizeof(cfgname), "/gmdb/RecentFiles/%s.filepath", menuname);
-	text = gnome_config_get_string(cfgname);
+	snprintf(cfgname, sizeof(cfgname), "%s-filepath", menuname);
+	text = g_settings_get_string(settings, cfgname);
 	gmdb_file_open(text);
 	g_free(text);
 	gmdb_load_recent_files();
 }
-void gmdb_file_open_recent_1() { gmdb_file_open_recent("menu_recent1"); }
-void gmdb_file_open_recent_2() { gmdb_file_open_recent("menu_recent2"); }
-void gmdb_file_open_recent_3() { gmdb_file_open_recent("menu_recent3"); }
-void gmdb_file_open_recent_4() { gmdb_file_open_recent("menu_recent4"); }
+void gmdb_file_open_recent_1() { gmdb_file_open_recent("recent1"); }
+void gmdb_file_open_recent_2() { gmdb_file_open_recent("recent2"); }
+void gmdb_file_open_recent_3() { gmdb_file_open_recent("recent3"); }
+void gmdb_file_open_recent_4() { gmdb_file_open_recent("recent4"); }
 
 static void
 gmdb_file_shuffle_recent(gchar *file_path)
@@ -58,9 +54,9 @@ gchar *text, cfgname[100];
 int i, index=0;
 
 	for (i=1; i<=4; i++) {
-		snprintf(cfgname, sizeof(cfgname), "/gmdb/RecentFiles/menu_recent%d.filepath", i);
-		text = gnome_config_get_string(cfgname);
-		if (text && !strcmp(text,file_path)) {
+		snprintf(cfgname, sizeof(cfgname), "recent%d-filepath", i);
+		text = g_settings_get_string(settings, cfgname);
+		if (!strcmp(text,file_path)) {
 			index = i;
 			break;
 		}
@@ -74,23 +70,23 @@ int i, index=0;
 	if (!index) index=4;
 
 	for (i=1; i<index; i++) {
-		snprintf(cfgname, sizeof(cfgname), "/gmdb/RecentFiles/menu_recent%d.filepath", i);
-		text = gnome_config_get_string(cfgname);
-		if (text) {
+		snprintf(cfgname, sizeof(cfgname), "recent%d-filepath", i);
+		text = g_settings_get_string(settings, cfgname);
+		if (text[0]) {
 			snprintf(cfgname, sizeof(cfgname),
-				"/gmdb/RecentFiles/menu_recent%d.filepath", 
+				"recent%d-filepath",
 				i+1);
-			gnome_config_set_string(cfgname, text);
+			g_settings_set_string(settings, cfgname, text);
 			g_free(text);
 
 			snprintf(cfgname, sizeof(cfgname),
-				"/gmdb/RecentFiles/menu_recent%d.basename", 
+				"recent%d-basename",
 				i);
-			text = gnome_config_get_string(cfgname);
+			text = g_settings_get_string(settings, cfgname);
 			snprintf(cfgname, sizeof(cfgname),
-				"/gmdb/RecentFiles/menu_recent%d.basename", 
+				"recent%d-basename",
 				i+1);
-			gnome_config_set_string(cfgname, text);
+			g_settings_set_string(settings, cfgname, text);
 			g_free(text);
 		}
 	}
@@ -98,19 +94,14 @@ int i, index=0;
 static void
 gmdb_file_add_recent(gchar *file_path)
 {
-	gchar basename[33];
+	gchar basename[256];
 	int i;
 
 	for (i=strlen(file_path);i>=0 && file_path[i]!='/';i--);
-	if (file_path[i]=='/') {
-		strncpy(basename,&file_path[i+1],32);
-	} else {
-		strncpy(basename,file_path,32);
-	}
-	basename[32]='\0';
-	gnome_config_set_string("/gmdb/RecentFiles/menu_recent1.basename", basename);
-	gnome_config_set_string("/gmdb/RecentFiles/menu_recent1.filepath", file_path);
-	gnome_config_sync();
+    snprintf(basename, sizeof(basename), "%s", file_path[i] == '/' ? &file_path[i+1] : file_path);
+	g_settings_set_string(settings, "recent1-basename", basename);
+	g_settings_set_string(settings, "recent1-filepath", file_path);
+	g_settings_sync();
 }
 
 static void
@@ -129,7 +120,7 @@ gmdb_reset_widgets (GmdbWidgets* gw) {
 		gtk_list_store_clear (GTK_LIST_STORE (gtk_icon_view_get_model (GTK_ICON_VIEW (w))));
 	}
 
-	w = glade_xml_get_widget (mainwin_xml, "gmdb");
+	w = GTK_WIDGET(gtk_builder_get_object(mainwin_xml, "gmdb"));
 	gtk_window_set_title (GTK_WINDOW (w), "MDB File Viewer");
 }
 
@@ -166,7 +157,7 @@ gmdb_file_init (void) {
 	gmdbwidgets = g_new0 (GmdbWidgets, 1);
 
 	for (i = 0; i < MAX_ACTIONITEMS; ++i) {
-		gmdbwidgets->actionitems[i] = glade_xml_get_widget (mainwin_xml, ainames[i]);
+		gmdbwidgets->actionitems[i] = GTK_WIDGET(gtk_builder_get_object(mainwin_xml, ainames[i]));
 	}
 	for (i = 0; i < MAX_ICONVIEWS; ++i) {
 		store = gtk_list_store_new (2, GDK_TYPE_PIXBUF, G_TYPE_STRING);
@@ -176,7 +167,7 @@ gmdb_file_init (void) {
 		gtk_icon_view_set_pixbuf_column (GTK_ICON_VIEW (gmdbwidgets->iconviews[i]), 0);
 		gtk_icon_view_set_text_column (GTK_ICON_VIEW (gmdbwidgets->iconviews[i]), 1);
 
-		w = glade_xml_get_widget (mainwin_xml, swnames[i]);
+		w = GTK_WIDGET(gtk_builder_get_object(mainwin_xml, swnames[i]));
 		gtk_container_add (GTK_CONTAINER (w), gmdbwidgets->iconviews[i]);
 		gtk_widget_show_all (w);
 	}
@@ -233,7 +224,7 @@ gmdb_file_open(gchar *file_path)
 	for (i=strlen(file_path);i>0 && file_path[i-1]!='/';i--);
 	mdb_filename=g_strdup(&file_path[i]);
 
-	win = (GtkWidget *) glade_xml_get_widget (mainwin_xml, "gmdb");
+	win = GTK_WIDGET(gtk_builder_get_object(mainwin_xml, "gmdb"));
 	g_snprintf(title, sizeof(title), "%s - MDB File Viewer", mdb_filename);
 	gtk_window_set_title(GTK_WINDOW(win), title);
 
@@ -246,13 +237,13 @@ gmdb_file_open(gchar *file_path)
 void
 gmdb_file_select_cb(GtkWidget *button, gpointer data)
 {
-	GtkWindow *parent_window = (GtkWindow *) glade_xml_get_widget (mainwin_xml, "gmdb");
+	GtkWindow *parent_window = GTK_WINDOW(gtk_builder_get_object(mainwin_xml, "gmdb"));
 
 	GtkWidget *dialog = gtk_file_chooser_dialog_new ("Please select a database.",
 					      parent_window,
 					      GTK_FILE_CHOOSER_ACTION_OPEN,
-					      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-					      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+					      "_Cancel", GTK_RESPONSE_CANCEL,
+					      "_Open", GTK_RESPONSE_ACCEPT,
 					      NULL);
 
 	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)

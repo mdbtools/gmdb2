@@ -16,15 +16,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <gtk/gtk.h>
-#include <gtk/gtkmessagedialog.h>
-#include <libgnome/gnome-i18n.h>
-#include <libgnome/gnome-help.h>
 #include "gmdb.h"
 
 extern GtkWidget *app;
 extern MdbHandle *mdb;
-GladeXML *exportwin_xml;
+GtkBuilder *exportwin_xml;
 MdbCatalogEntry *cat_entry;
 
 #define COMMA	"Comma (,)"
@@ -50,13 +46,13 @@ MdbCatalogEntry *cat_entry;
 #define BIN_HEXADECIMAL "Hexademical"
 
 void
-gmdb_export_get_delimiter(GladeXML *xml, gchar *delimiter, int max_buf)
+gmdb_export_get_delimiter(GtkBuilder *xml, gchar *delimiter, int max_buf)
 {
-	GtkComboBox *combobox;
-	gchar *str;
+	GtkComboBoxText *combobox;
+	const gchar *str;
 
-	combobox = GTK_COMBO_BOX(glade_xml_get_widget(xml, "sep_combo"));
-	str = gtk_combo_box_get_active_text(combobox);
+	combobox = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(xml, "sep_combo"));
+	str = gtk_combo_box_text_get_active_text(combobox);
 	if (!strcmp(str,COMMA))
 		strncpy(delimiter, ",", max_buf);
 	else if (!strcmp(str,TAB))
@@ -76,13 +72,13 @@ gmdb_export_get_delimiter(GladeXML *xml, gchar *delimiter, int max_buf)
 }
 
 void
-gmdb_export_get_lineterm(GladeXML *xml, gchar *lineterm, int max_buf)
+gmdb_export_get_lineterm(GtkBuilder *xml, gchar *lineterm, int max_buf)
 {
-	GtkComboBox *combobox;
+	GtkComboBoxText *combobox;
 	gchar *str;
 
-	combobox = GTK_COMBO_BOX(glade_xml_get_widget(xml, "term_combo"));
-	str = gtk_combo_box_get_active_text (combobox);
+	combobox = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(xml, "term_combo"));
+	str = gtk_combo_box_text_get_active_text(combobox);
 	if (!strcmp(str,LF))
 		strncpy(lineterm, "\n", max_buf);
 	else if (!strcmp(str,CR))
@@ -94,13 +90,13 @@ gmdb_export_get_lineterm(GladeXML *xml, gchar *lineterm, int max_buf)
 }
 
 void
-gmdb_export_get_quotechar(GladeXML *xml, gchar *quotechar, int max_buf)
+gmdb_export_get_quotechar(GtkBuilder *xml, gchar *quotechar, int max_buf)
 {
-	GtkComboBox *combobox;
+	GtkComboBoxText *combobox;
 	gchar *str;
 
-	combobox = GTK_COMBO_BOX(glade_xml_get_widget(xml, "qchar_combo"));
-	str = gtk_combo_box_get_active_text (combobox);
+	combobox = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(xml, "qchar_combo"));
+	str = gtk_combo_box_text_get_active_text (combobox);
 	if (!strcmp(str, NOQUOTE))
 		quotechar[0] = '\0'; /* Quoting disabled */
 	else
@@ -110,26 +106,26 @@ gmdb_export_get_quotechar(GladeXML *xml, gchar *quotechar, int max_buf)
 }
 
 void
-gmdb_export_get_escapechar(GladeXML *xml, gchar *escapechar, int max_buf)
+gmdb_export_get_escapechar(GtkBuilder *xml, gchar *escapechar, int max_buf)
 {
-	GtkComboBox *combobox;
+	GtkComboBoxText *combobox;
 	gchar *str;
 
-	combobox = GTK_COMBO_BOX(glade_xml_get_widget(xml, "escchar_combo"));
-	str = gtk_combo_box_get_active_text (combobox);
+	combobox = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(xml, "escchar_combo"));
+	str = gtk_combo_box_text_get_active_text (combobox);
 	strncpy(escapechar, str, max_buf);
 	if (max_buf)
 		escapechar[max_buf-1] = '\0';
 }
 
 int
-gmdb_export_get_binmode(GladeXML *xml)
+gmdb_export_get_binmode(GtkBuilder *xml)
 {
-	GtkComboBox *combobox;
+	GtkComboBoxText *combobox;
 	gchar *str;
 
-	combobox = GTK_COMBO_BOX(glade_xml_get_widget(xml, "bin_combo"));
-	str = gtk_combo_box_get_active_text (combobox);
+	combobox = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(xml, "bin_combo"));
+	str = gtk_combo_box_text_get_active_text (combobox);
 
 	if (!strcmp(str,BIN_STRIP))
 		return MDB_BINEXPORT_STRIP;
@@ -143,35 +139,23 @@ gmdb_export_get_binmode(GladeXML *xml)
 
 
 int
-gmdb_export_get_headers(GladeXML *xml)
+gmdb_export_get_headers(GtkBuilder *xml)
 {
 	GtkWidget *checkbox;
 
-	checkbox = glade_xml_get_widget(xml, "headers_checkbox");
+	checkbox = GTK_WIDGET(gtk_builder_get_object(xml, "headers_checkbox"));
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox)))
 		return 1;
 	else
 		return 0;
 }
 gchar *
-gmdb_export_get_filepath(GladeXML *xml)
+gmdb_export_get_filepath(GtkBuilder *xml)
 {
 	GtkWidget *fchoose;
 
-	fchoose = glade_xml_get_widget(xml, "filename_entry");
+	fchoose = GTK_WIDGET(gtk_builder_get_object(xml, "filename_entry"));
 	return (gchar *) gtk_entry_get_text (GTK_ENTRY (fchoose));
-}
-
-void
-gmdb_export_help_cb(GtkWidget *w, gpointer data)
-{
-	GError *error = NULL;
-
-	gnome_help_display("gmdb.xml", "gmdb-table-export", &error);
-	if (error != NULL) {
-		g_warning ("%s", error->message);
-		g_error_free (error);
-	}
 }
 
 void
@@ -267,7 +251,7 @@ size_t length;
 	g_free(bound_lens);
 
 	fclose(outfile);
-	exportwin = glade_xml_get_widget (exportwin_xml, "export_dialog");
+	exportwin = GTK_WIDGET(gtk_builder_get_object(exportwin_xml, "export_dialog"));
 	gtk_widget_destroy(exportwin);
 	dlg = gtk_message_dialog_new (GTK_WINDOW (gtk_widget_get_toplevel (w)),
 	    GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE,
@@ -275,52 +259,18 @@ size_t length;
 	gtk_dialog_run (GTK_DIALOG (dlg));
 	gtk_widget_destroy (dlg);
 }
+
 void gmdb_table_export(MdbCatalogEntry *entry) 
 {
+    GError *error = NULL;
 	cat_entry = entry;
 
 	/* load the interface */
-	exportwin_xml = glade_xml_new(GMDB_GLADEDIR "gmdb-export.glade", NULL, NULL);
+	exportwin_xml = gtk_builder_new();
+    if (!gtk_builder_add_from_file(exportwin_xml, GMDB_UIDIR "gmdb-export.ui", &error)) {
+        g_warning("Error loading " GMDB_UIDIR "gmdb-export.ui: %s", error->message);
+        g_error_free(error);
+    }
 	/* connect the signals in the interface */
-	glade_xml_signal_autoconnect(exportwin_xml);
-	gmdb_table_export_populate_dialog(exportwin_xml);
-}
-void
-gmdb_table_export_populate_dialog(GladeXML *xml)
-{
-	GtkComboBox *combobox;
-
-	/* Populate the widgets */
-	combobox = GTK_COMBO_BOX(glade_xml_get_widget(xml, "term_combo"));
-	gtk_combo_box_append_text(combobox, LF);
-	gtk_combo_box_append_text(combobox, CR);
-	gtk_combo_box_append_text(combobox, CRLF);
-	gtk_combo_box_set_active(combobox, 0);
-
-	combobox = GTK_COMBO_BOX(glade_xml_get_widget(xml, "sep_combo"));
-	gtk_combo_box_append_text(combobox, COMMA);
-	gtk_combo_box_append_text(combobox, TAB);
-	gtk_combo_box_append_text(combobox, SPACE);
-	gtk_combo_box_append_text(combobox, COLON);
-	gtk_combo_box_append_text(combobox, SEMICOLON);
-	gtk_combo_box_append_text(combobox, PIPE);
-	gtk_combo_box_set_active(combobox, 0);
-
-	combobox = GTK_COMBO_BOX(glade_xml_get_widget(xml, "qchar_combo"));
-	gtk_combo_box_append_text(combobox, "\"");
-	gtk_combo_box_append_text(combobox, "'");
-	gtk_combo_box_append_text(combobox, "`");
-	gtk_combo_box_append_text(combobox, NOQUOTE);
-	gtk_combo_box_set_active(combobox, 0);
-
-	combobox = GTK_COMBO_BOX(glade_xml_get_widget(xml, "escchar_combo"));
-	gtk_combo_box_append_text(combobox, "\\");
-	gtk_combo_box_set_active(combobox, 0);
-
-	combobox = GTK_COMBO_BOX(glade_xml_get_widget(xml, "bin_combo"));
-	gtk_combo_box_append_text(combobox, BIN_STRIP);
-	gtk_combo_box_append_text(combobox, BIN_RAW);
-	gtk_combo_box_append_text(combobox, BIN_OCTAL);
-	gtk_combo_box_append_text(combobox, BIN_HEXADECIMAL);
-	gtk_combo_box_set_active(combobox, 1);
+	gtk_builder_connect_signals(exportwin_xml, NULL);
 }

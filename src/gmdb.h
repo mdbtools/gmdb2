@@ -6,7 +6,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <gtk/gtk.h>
-#include <glade/glade.h>
+#ifndef GETTEXT_PACKAGE
+#define GETTEXT_PACKAGE "gtk20"
+#endif
+#include <glib/gi18n-lib.h>
 #include <mdbtools.h>
 #include <mdbsql.h>
 
@@ -22,12 +25,12 @@ void gmdb_info_cb(GtkWidget *w, gpointer data);
 void gmdb_prefs_cb(GtkWidget *w, gpointer data);
 void gmdb_help_cb(GtkWidget *w, gpointer data);
 void gmdb_about_cb(GtkWidget *w, gpointer data);
-void gmdb_load_recent_files(void);
+void gmdb_load_recent_files();
 
 GtkWidget *gmdb_table_data_new(MdbCatalogEntry *entry);
 GtkWidget *gmdb_table_export_new(MdbCatalogEntry *entry);
 void gmdb_table_export(MdbCatalogEntry *entry) ;
-void gmdb_table_export_populate_dialog(GladeXML *xml);
+void gmdb_table_export_populate_dialog(GtkBuilder *xml);
 
 /* table_def.c */
 void gmdb_table_def_new(MdbCatalogEntry *entry);
@@ -71,23 +74,23 @@ void gmdb_schema_export_cb(GtkWidget *w, gpointer data);
 void gmdb_schema_help_cb(GtkWidget *w, gpointer data);
 
 /* table.c */
-void gmdb_table_debug_cb(GtkList *list, GtkWidget *w, gpointer data);
-void gmdb_table_export_cb(GtkList *list, GtkWidget *w, gpointer data);
-void gmdb_table_def_cb(GtkList *list, GtkWidget *w, gpointer data);
+void gmdb_table_debug_cb(GtkContainer *list, GtkWidget *w, gpointer data);
+void gmdb_table_export_cb(GtkContainer *list, GtkWidget *w, gpointer data);
+void gmdb_table_def_cb(GtkContainer *list, GtkWidget *w, gpointer data);
 void gmdb_table_unselect_cb (GtkIconView*, gpointer);
 void gmdb_table_select_cb (GtkIconView*, gpointer);
-void gmdb_table_data_cb(GtkList *list, GtkWidget *w, gpointer data);
+void gmdb_table_data_cb(GtkContainer *list, GtkWidget *w, gpointer data);
 void gmdb_table_init_popup (GtkWidget*);
 void gmdb_table_set_sensitive(gboolean b);
 
 /* table_export.c */
-void gmdb_export_get_delimiter(GladeXML *xml, gchar *delimiter, int max_buf);
-void gmdb_export_get_lineterm(GladeXML *xml, gchar *lineterm, int max_buf);
-void gmdb_export_get_quotechar(GladeXML *xml, gchar *quotechar, int max_buf);
-void gmdb_export_get_escapechar(GladeXML *xml, gchar *escapechar, int max_buf);
-int gmdb_export_get_binmode(GladeXML *xml);
-int gmdb_export_get_headers(GladeXML *xml);
-gchar *gmdb_export_get_filepath(GladeXML *xml);
+void gmdb_export_get_delimiter(GtkBuilder *xml, gchar *delimiter, int max_buf);
+void gmdb_export_get_lineterm(GtkBuilder *xml, gchar *lineterm, int max_buf);
+void gmdb_export_get_quotechar(GtkBuilder *xml, gchar *quotechar, int max_buf);
+void gmdb_export_get_escapechar(GtkBuilder *xml, gchar *escapechar, int max_buf);
+int gmdb_export_get_binmode(GtkBuilder *xml);
+int gmdb_export_get_headers(GtkBuilder *xml);
+gchar *gmdb_export_get_filepath(GtkBuilder *xml);
 void gmdb_export_help_cb(GtkWidget *w, gpointer data);
 void gmdb_table_export_button_cb(GtkWidget *w, gpointer data);
 

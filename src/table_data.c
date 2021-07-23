@@ -42,40 +42,43 @@ gmdb_table_data_new(MdbCatalogEntry *entry)
 {
 MdbTableDef *table;
 MdbColumn *col;
-GtkWidget *clist;
+GType *types;
+GtkListStore *list;
+GtkWidget *tree_view;
 GtkWidget *scroll;
+GtkTreeIter iter = { 0 };
 int i;
 long row, maxrow;
 gchar *bound_data[256];
 GMdbDataWindow *dataw = NULL;
-
+GtkTreeViewColumn *column;
+GtkCellRenderer *renderer;
 
 	/* do we have an active window for this object? if so raise it */
 	for (i=0;i<g_list_length(window_list);i++) {
 		dataw = g_list_nth_data(window_list, i);
 		if (!strcmp(dataw->table_name, entry->object_name)) {
-			gdk_window_raise (dataw->window->window);
+			gdk_window_raise (gtk_widget_get_window(dataw->window));
 			return dataw->window;
 		}
 	}
 
 	dataw = g_malloc(sizeof(GMdbDataWindow));
-	strcpy(dataw->table_name, entry->object_name);
+	snprintf(dataw->table_name, sizeof(dataw->table_name), "%s", entry->object_name);
 
 	dataw->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);	
 	gtk_window_set_title(GTK_WINDOW(dataw->window), entry->object_name);
-	gtk_widget_set_usize(dataw->window, 300,200);
-	gtk_widget_set_uposition(dataw->window, 50,50);
+	gtk_window_set_default_size(GTK_WINDOW(dataw->window), 600, 400);
+	gtk_window_set_position(GTK_WINDOW(dataw->window), GTK_WIN_POS_NONE);
 	gtk_widget_show(dataw->window);
 
-    gtk_signal_connect (GTK_OBJECT (dataw->window), "delete_event",
-        GTK_SIGNAL_FUNC (gmdb_table_data_close), dataw);
-
+    g_signal_connect (dataw->window, "delete_event",
+        G_CALLBACK(gmdb_table_data_close), dataw);
 
 	scroll = gtk_scrolled_window_new(NULL,NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_widget_show (scroll);
+	gtk_widget_show(scroll);
 	gtk_container_add(GTK_CONTAINER(dataw->window), scroll);
 
 	/* read table */
@@ -83,20 +86,29 @@ GMdbDataWindow *dataw = NULL;
 	mdb_read_columns(table);
 	mdb_rewind_table(table);
 
-	clist = gtk_clist_new(table->num_cols);
-	gtk_widget_show(clist);
-	gtk_container_add(GTK_CONTAINER(scroll),clist);
+	types = g_malloc0(table->num_cols * sizeof(GType));
+	for (i=0;i<table->num_cols;i++) {
+		types[i] = G_TYPE_STRING;
+	}
+	list = gtk_list_store_newv(table->num_cols, types);
+	g_free(types);
+
+	tree_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(list));
+	gtk_widget_show(tree_view);
+	gtk_container_add(GTK_CONTAINER(scroll),tree_view);
+	renderer = gtk_cell_renderer_text_new(); 
 
 	for (i=0;i<table->num_cols;i++) {
 		/* bind columns */
-		bound_data[i] = (char *) g_malloc0(MDB_BIND_SIZE);
+		bound_data[i] = g_malloc0(MDB_BIND_SIZE);
 		mdb_bind_column(table, i+1, bound_data[i], NULL);
 
 		/* display column titles */
 		col=g_ptr_array_index(table->columns,i);
-		gtk_clist_set_column_title(GTK_CLIST(clist), i, col->name);
+		column = gtk_tree_view_column_new_with_attributes(col->name, renderer, "text", i, NULL);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
 	}
-	gtk_clist_column_titles_show(GTK_CLIST(clist));
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree_view), TRUE);
 
 	maxrow = gmdb_prefs_get_maxrows();
 
@@ -105,7 +117,10 @@ GMdbDataWindow *dataw = NULL;
 	while(mdb_fetch_row(table) && 
 			(!maxrow || (row < maxrow))) {
 		row++;
-		gtk_clist_append(GTK_CLIST(clist), bound_data);
+		gtk_list_store_append(list, &iter);
+		for (i=0;i<table->num_cols;i++) {
+			gtk_list_store_set(list, &iter, i, bound_data[i], -1);
+		}
 	}
 
 	/* free the memory used to bind */

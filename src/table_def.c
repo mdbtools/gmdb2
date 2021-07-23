@@ -34,7 +34,7 @@
 #define COL_REQUIRED 13
 #define COL_ALLOWZEROLENGTH 14
 
-static void update_bottom_properties(GtkTreeView *treeview, GladeXML *xml);
+static void update_bottom_properties(GtkTreeView *treeview, GtkBuilder *xml);
 
 typedef struct GMdbDefWindow {
     gchar table_name[MDB_MAX_OBJ_NAME];
@@ -45,7 +45,7 @@ static GList *window_list;
 
 /* callbacks */
 static gint
-gmdb_table_def_close(GtkList *list, GtkWidget *w, GMdbDefWindow *defw)
+gmdb_table_def_close(GtkContainer *list, GtkWidget *w, GMdbDefWindow *defw)
 {
 	window_list = g_list_remove(window_list, defw);
 	g_free(defw);
@@ -53,7 +53,7 @@ gmdb_table_def_close(GtkList *list, GtkWidget *w, GMdbDefWindow *defw)
 }
 
 static gint
-gmdb_table_def_cursorchanged(GtkTreeView *treeview, GladeXML *xml)
+gmdb_table_def_cursorchanged(GtkTreeView *treeview, GtkBuilder *xml)
 {
 	update_bottom_properties(treeview, xml);
 	return FALSE;
@@ -63,12 +63,12 @@ void
 gmdb_table_def_new(MdbCatalogEntry *entry)
 {
 /* FIXME: many reference should be freed */
-GladeXML *xml;
+GtkBuilder *xml;
 GtkWindow *win;
 GtkTreeView *treeview;
 GtkListStore *store;
 GtkTreeModel *model;
-GtkTreeIter iter;
+GtkTreeIter iter = { 0 };
 GtkTreeSelection *selection;
 int i, j;
 GMdbDefWindow *defw;
@@ -77,20 +77,25 @@ MdbColumn *col;
 const char *propval;
 MdbIndex *idx;
 GdkPixbuf *pixbuf;
+GError *error = NULL;
 
 	/* do we have an active window for this object? if so raise it */
 	for (i=0;i<g_list_length(window_list);i++) {
 		defw = g_list_nth_data(window_list, i);
 		if (!strcmp(defw->table_name, entry->object_name) && entry->object_type == MDB_TABLE) {
-			gdk_window_raise (defw->window->window);
+			gdk_window_raise (gtk_widget_get_window(defw->window));
 			return;
 		}
 	}
 
 	/* load the interface */
-	xml = glade_xml_new(GMDB_GLADEDIR "gmdb-tabledef.glade", NULL, NULL);
-	glade_xml_signal_autoconnect(xml);
-	win = GTK_WINDOW(glade_xml_get_widget(xml, "window1"));
+	xml = gtk_builder_new();
+    if (!gtk_builder_add_from_file(xml, GMDB_UIDIR "gmdb-tabledef.ui", &error)) {
+        g_warning("Error adding " GMDB_UIDIR "gmdb-tabledef.ui: %s", error->message);
+        g_error_free(error);
+    }
+	gtk_builder_connect_signals(xml, NULL);
+	win = GTK_WINDOW(gtk_builder_get_object(xml, "window1"));
 
 	gtk_window_set_title(win, entry->object_name);
 	gtk_window_set_default_size(win, 600, 400);
@@ -213,7 +218,7 @@ GdkPixbuf *pixbuf;
 	}
 
 
-	treeview = GTK_TREE_VIEW(glade_xml_get_widget(xml, "columns_treeview"));
+	treeview = GTK_TREE_VIEW(gtk_builder_get_object(xml, "columns_treeview"));
 	gtk_tree_view_insert_column_with_attributes (treeview,
 		-1,      
 		"PK", gtk_cell_renderer_pixbuf_new(),
@@ -251,14 +256,14 @@ GdkPixbuf *pixbuf;
 	gtk_widget_show(GTK_WIDGET(win));
 	
 	defw = g_malloc(sizeof(GMdbDefWindow));
-	strcpy(defw->table_name, entry->object_name);
+	snprintf(defw->table_name, sizeof(defw->table_name), "%s", entry->object_name);
 	defw->window = GTK_WIDGET(win);
 	window_list = g_list_append(window_list, defw);
 
-	gtk_signal_connect (GTK_OBJECT (treeview), "cursor-changed",
-		GTK_SIGNAL_FUNC (gmdb_table_def_cursorchanged), xml);
-	gtk_signal_connect (GTK_OBJECT (defw->window), "delete_event",
-		GTK_SIGNAL_FUNC (gmdb_table_def_close), defw);
+	g_signal_connect(treeview, "cursor-changed",
+		G_CALLBACK(gmdb_table_def_cursorchanged), xml);
+	g_signal_connect(defw->window, "delete_event",
+		G_CALLBACK(gmdb_table_def_close), defw);
 }
 
 /* That function is called when selection is changed
@@ -268,7 +273,7 @@ static void
 update_bottom_properties_selected(GtkTreeModel *model,
 	GtkTreePath *path,
 	GtkTreeIter *iter,
-	GladeXML *xml)
+	GtkBuilder *xml)
 {
 char tmp[20];
 gint col_type;
@@ -300,8 +305,8 @@ GtkEntry *entry;
 		-1);
 	
 	//fprintf(stderr, "type=%d\n", col_type);
-	label = GTK_LABEL(glade_xml_get_widget(xml, "size_label"));
-	entry = GTK_ENTRY(glade_xml_get_widget(xml, "size_entry"));
+	label = GTK_LABEL(gtk_builder_get_object(xml, "size_label"));
+	entry = GTK_ENTRY(gtk_builder_get_object(xml, "size_entry"));
 	switch (col_type) {
 	//case MDB_BOOL:
 	case MDB_BYTE:
@@ -328,8 +333,8 @@ GtkEntry *entry;
 		gtk_widget_hide(GTK_WIDGET(entry));
 	}
 
-	label = GTK_LABEL(glade_xml_get_widget(xml, "format_label"));
-	entry = GTK_ENTRY(glade_xml_get_widget(xml, "format_entry"));
+	label = GTK_LABEL(gtk_builder_get_object(xml, "format_label"));
+	entry = GTK_ENTRY(gtk_builder_get_object(xml, "format_entry"));
 	switch (col_type) {
 	case MDB_BOOL:
 	case MDB_BYTE:
@@ -357,8 +362,8 @@ GtkEntry *entry;
 	}
 	g_free(format);
 
-	label = GTK_LABEL(glade_xml_get_widget(xml, "decimalplaces_label"));
-	entry = GTK_ENTRY(glade_xml_get_widget(xml, "decimalplaces_entry"));
+	label = GTK_LABEL(gtk_builder_get_object(xml, "decimalplaces_label"));
+	entry = GTK_ENTRY(gtk_builder_get_object(xml, "decimalplaces_entry"));
 	switch (col_type) {
 	case MDB_BYTE:
 	case MDB_INT:
@@ -378,8 +383,8 @@ GtkEntry *entry;
 		gtk_widget_hide(GTK_WIDGET(entry));
 	}
 
-	label = GTK_LABEL(glade_xml_get_widget(xml, "inputmask_label"));
-	entry = GTK_ENTRY(glade_xml_get_widget(xml, "inputmask_entry"));
+	label = GTK_LABEL(gtk_builder_get_object(xml, "inputmask_label"));
+	entry = GTK_ENTRY(gtk_builder_get_object(xml, "inputmask_entry"));
 	switch (col_type) {
 	//case MDB_BOOL:
 	case MDB_BYTE:
@@ -406,12 +411,12 @@ GtkEntry *entry;
 	}
 	g_free(inputmask);
 
-	entry = GTK_ENTRY(glade_xml_get_widget(xml, "caption_entry"));
+	entry = GTK_ENTRY(gtk_builder_get_object(xml, "caption_entry"));
 	gtk_entry_set_text(entry, caption ? caption : "");
 	g_free(caption);
 
-	label = GTK_LABEL(glade_xml_get_widget(xml, "defaultvalue_label"));
-	entry = GTK_ENTRY(glade_xml_get_widget(xml, "defaultvalue_entry"));
+	label = GTK_LABEL(gtk_builder_get_object(xml, "defaultvalue_label"));
+	entry = GTK_ENTRY(gtk_builder_get_object(xml, "defaultvalue_entry"));
 	switch (col_type) {
 	case MDB_BOOL:
 	case MDB_BYTE:
@@ -437,8 +442,8 @@ GtkEntry *entry;
 	}
 	g_free(defaultvalue);
 
-	label = GTK_LABEL(glade_xml_get_widget(xml, "validationrule_label"));
-	entry = GTK_ENTRY(glade_xml_get_widget(xml, "validationrule_entry"));
+	label = GTK_LABEL(gtk_builder_get_object(xml, "validationrule_label"));
+	entry = GTK_ENTRY(gtk_builder_get_object(xml, "validationrule_entry"));
 	switch (col_type) {
 	case MDB_BOOL:
 	case MDB_BYTE:
@@ -465,8 +470,8 @@ GtkEntry *entry;
 	}
 	g_free(validationrule);
 
-	label = GTK_LABEL(glade_xml_get_widget(xml, "validationtext_label"));
-	entry = GTK_ENTRY(glade_xml_get_widget(xml, "validationtext_entry"));
+	label = GTK_LABEL(gtk_builder_get_object(xml, "validationtext_label"));
+	entry = GTK_ENTRY(gtk_builder_get_object(xml, "validationtext_entry"));
 	switch (col_type) {
 	case MDB_BOOL:
 	case MDB_BYTE:
@@ -493,11 +498,11 @@ GtkEntry *entry;
 	}
 	g_free(validationtext);
 
-	entry = GTK_ENTRY(glade_xml_get_widget(xml, "required_entry"));
+	entry = GTK_ENTRY(gtk_builder_get_object(xml, "required_entry"));
 	gtk_entry_set_text(entry, required ? "Yes" : "No");
 
-	label = GTK_LABEL(glade_xml_get_widget(xml, "allowzerolength_label"));
-	entry = GTK_ENTRY(glade_xml_get_widget(xml, "allowzerolength_entry"));
+	label = GTK_LABEL(gtk_builder_get_object(xml, "allowzerolength_label"));
+	entry = GTK_ENTRY(gtk_builder_get_object(xml, "allowzerolength_entry"));
 	switch (col_type) {
 	//case MDB_BOOL:
 	//case MDB_BYTE:
@@ -525,7 +530,7 @@ GtkEntry *entry;
 }
 
 static void
-update_bottom_properties(GtkTreeView *treeview, GladeXML *xml) {
+update_bottom_properties(GtkTreeView *treeview, GtkBuilder *xml) {
 GtkTreeSelection *selection;
 	
 	selection = gtk_tree_view_get_selection(treeview);

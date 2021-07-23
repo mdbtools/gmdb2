@@ -16,16 +16,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <gtk/gtkiconview.h>
 #include "gmdb.h"
 
-extern GladeXML* mainwin_xml;
+extern GtkBuilder* mainwin_xml;
 extern MdbHandle *mdb;
 int selected_table = -1;
 
 /* callbacks */
 void
-gmdb_table_debug_cb(GtkList *list, GtkWidget *w, gpointer data)
+gmdb_table_debug_cb(GtkContainer *list, GtkWidget *w, gpointer data)
 {
 MdbCatalogEntry *entry;
 
@@ -38,7 +37,7 @@ MdbCatalogEntry *entry;
 	gmdb_debug_new_cb(w, (gpointer) &entry->table_pg);
 }
 void
-gmdb_table_def_cb(GtkList *list, GtkWidget *w, gpointer data)
+gmdb_table_def_cb(GtkContainer *list, GtkWidget *w, gpointer data)
 {
 MdbCatalogEntry *entry;
 
@@ -52,7 +51,7 @@ MdbCatalogEntry *entry;
 	gmdb_table_def_new(entry);
 }
 void
-gmdb_table_export_cb(GtkList *list, GtkWidget *w, gpointer data)
+gmdb_table_export_cb(GtkContainer *list, GtkWidget *w, gpointer data)
 {
 MdbCatalogEntry *entry;
 
@@ -66,7 +65,7 @@ MdbCatalogEntry *entry;
 	gmdb_table_export(entry);
 }
 void
-gmdb_table_data_cb(GtkList *list, GtkWidget *w, gpointer data)
+gmdb_table_data_cb(GtkContainer *list, GtkWidget *w, gpointer data)
 {
 MdbCatalogEntry *entry;
 
@@ -138,7 +137,7 @@ gmdb_table_popup_cb (GtkIconView* giv, GdkEvent* event, gpointer data) {
 			GtkTreePath *path = gtk_icon_view_get_path_at_pos (giv, (gint) event_button->x, (gint) event_button->y);
 			if (path) {
 				gtk_icon_view_select_path (giv, path);
-				gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
+				gtk_menu_popup_at_pointer(GTK_MENU (menu), event);
 				return TRUE;
 			}
 		}
@@ -151,13 +150,13 @@ gmdb_table_set_sensitive(gboolean b)
 {
 	GtkWidget *button;
 
-	button = (GtkWidget *) glade_xml_get_widget (mainwin_xml, "table_definition");
+	button = GTK_WIDGET(gtk_builder_get_object(mainwin_xml, "table_definition"));
 	gtk_widget_set_sensitive(button,b);
 
-	button = (GtkWidget *) glade_xml_get_widget (mainwin_xml, "table_data");
+	button = GTK_WIDGET(gtk_builder_get_object(mainwin_xml, "table_data"));
 	gtk_widget_set_sensitive(button,b);
 
-	button = (GtkWidget *) glade_xml_get_widget (mainwin_xml, "table_export");
+	button = GTK_WIDGET(gtk_builder_get_object(mainwin_xml, "table_export"));
 	gtk_widget_set_sensitive(button,b);
 }
 void

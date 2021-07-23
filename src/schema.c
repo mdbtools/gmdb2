@@ -16,15 +16,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <gtk/gtkmessagedialog.h>
-#include <libgnome/gnome-i18n.h>
-#include <libgnome/gnome-help.h>
 #include "gmdb.h"
 
 extern GtkWidget *app;
 extern MdbHandle *mdb;
 
-GladeXML *schemawin_xml;
+GtkBuilder *schemawin_xml;
 static gchar backend[100];
 static gchar tabname[MDB_MAX_OBJ_NAME+1];
 static guint32 export_options;
@@ -76,25 +73,25 @@ void
 gmdb_schema_export_cb(GtkWidget *w, gpointer data)
 {
 GtkWidget *schemawin, *checkbox, *chooser;
-GtkComboBox *combobox;
+GtkComboBoxText *combobox;
 const gchar *file_path;
 gchar *tmp;
 int i;
 
-	schemawin = glade_xml_get_widget (schemawin_xml, "schema_dialog");
+	schemawin = GTK_WIDGET(gtk_builder_get_object(schemawin_xml, "schema_dialog"));
 
-	chooser = glade_xml_get_widget (schemawin_xml, "filename_entry");
+	chooser = GTK_WIDGET(gtk_builder_get_object(schemawin_xml, "filename_entry"));
 	file_path = gtk_entry_get_text(GTK_ENTRY(chooser));
 
-	combobox = GTK_COMBO_BOX(glade_xml_get_widget(schemawin_xml, "table_combo"));
-	tmp = gtk_combo_box_get_active_text(combobox);
+	combobox = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(schemawin_xml, "table_combo"));
+	tmp = gtk_combo_box_text_get_active_text(combobox);
 	strncpy(tabname,tmp,MDB_MAX_OBJ_NAME);
 	tabname[MDB_MAX_OBJ_NAME]=0;
 	if (!strcmp(tabname,ALL_TABLES))
 		tabname[0]='\0';
 
-	combobox = GTK_COMBO_BOX(glade_xml_get_widget (schemawin_xml, "backend_combo"));
-	tmp = gtk_combo_box_get_active_text(combobox);
+	combobox = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(schemawin_xml, "backend_combo"));
+	tmp = gtk_combo_box_text_get_active_text(combobox);
 	if (!strcmp(tmp, "Oracle"))
 		strcpy(backend, "oracle");
 	else if (!strcmp(tmp, "Sybase"))
@@ -117,36 +114,35 @@ int i;
 
 	/* fill the bit field from the checkboxes */
 	for (i=0; i<n_capabilities; ++i) {
-		checkbox = glade_xml_get_widget (schemawin_xml, capabilities_xlt[i].option_name);
+		checkbox = GTK_WIDGET(gtk_builder_get_object(schemawin_xml, capabilities_xlt[i].option_name));
 		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox)))
 			export_options |= capabilities_xlt[i].option_value;
 	}
 	//printf("%s %s %02X\n",tabname,backend,export_options);
 
 	gmdb_schema_export(file_path);
-	gtk_widget_destroy(schemawin);
 }
 static void
 check_default_options() {
 	int i;
 	GtkToggleButton *checkbox;
 	for (i=0; i<n_capabilities; ++i) {
-		checkbox = GTK_TOGGLE_BUTTON(glade_xml_get_widget (schemawin_xml, capabilities_xlt[i].option_name));
+		checkbox = GTK_TOGGLE_BUTTON(gtk_builder_get_object(schemawin_xml, capabilities_xlt[i].option_name));
 		gtk_toggle_button_set_active(checkbox, (MDB_SHEXP_DEFAULT & capabilities_xlt[i].option_value) != 0);
 	}
 }
 static void
 refresh_available_options() {
-	GtkComboBox *combobox; 
+	GtkComboBoxText *combobox;
 	GtkWidget *checkbox;
 	guint32 capabilities;
 	MdbBackend *backend_obj;
 	int i;
 
-	combobox = GTK_COMBO_BOX(glade_xml_get_widget (schemawin_xml, "backend_combo"));
+	combobox = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(schemawin_xml, "backend_combo"));
 	if (!combobox) return; /* window is beeing destroyed */
 
-	const gchar *backend_name = gtk_combo_box_get_active_text(combobox);
+	const gchar *backend_name = gtk_combo_box_text_get_active_text(combobox);
 	if      (!strcmp(backend_name,"Oracle")) strcpy(backend,"oracle");
 	else if (!strcmp(backend_name,"Sybase")) strcpy(backend,"sybase");
 	else if (!strcmp(backend_name,"MS SQL Server")) strcpy(backend,"sybase");
@@ -161,7 +157,7 @@ refresh_available_options() {
 	capabilities = backend_obj->capabilities;
 	//printf("backend capabilities: 0x%04x\n", capabilities);
 	for (i=0; i<n_capabilities; ++i) {
-		checkbox = glade_xml_get_widget (schemawin_xml, capabilities_xlt[i].option_name);
+		checkbox = GTK_WIDGET(gtk_builder_get_object(schemawin_xml, capabilities_xlt[i].option_name));
 		gtk_widget_set_sensitive(checkbox, (capabilities & capabilities_xlt[i].option_value) != 0);
 	}
 }
@@ -172,46 +168,39 @@ gmdb_schema_backend_cb(GtkComboBox *widget, gpointer data)
 	refresh_available_options();
 }
 
-void
-gmdb_schema_help_cb(GtkWidget *w, gpointer data) 
-{
-	GError *error = NULL;
-
-	gnome_help_display("gmdb.xml", "gmdb-schema", &error);
-	if (error != NULL) {
-		g_warning ("%s", error->message);
-		g_error_free (error);
-	}
-}
-
 void 
 gmdb_schema_new_cb(GtkWidget *w, gpointer data) 
 {
-	GtkComboBox *combobox;
+	GtkComboBoxText *combobox;
 	MdbCatalogEntry *entry;
+    GError *error = NULL;
 	int i;
    
 	/* load the interface */
-	schemawin_xml = glade_xml_new(GMDB_GLADEDIR "gmdb-schema.glade", NULL, NULL);
+	schemawin_xml = gtk_builder_new();
+    if (!gtk_builder_add_from_file(schemawin_xml, GMDB_UIDIR "gmdb-schema.ui", NULL)) {
+        g_warning("Error adding " GMDB_UIDIR "gmdb-schema.ui: %s", error->message);
+        g_error_free(error);
+    }
 	/* connect the signals in the interface */
-	glade_xml_signal_autoconnect(schemawin_xml);
+	gtk_builder_connect_signals(schemawin_xml, NULL);
 	/* set up capabilities call back. TODO: autoconnect should do that */
-	combobox = GTK_COMBO_BOX(glade_xml_get_widget(schemawin_xml, "backend_combo"));
-	gtk_combo_box_set_active(combobox, 0);
-	g_signal_connect( G_OBJECT (combobox), "changed",
+	combobox = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(schemawin_xml, "backend_combo"));
+	gtk_combo_box_set_active(GTK_COMBO_BOX(combobox), 0);
+	g_signal_connect(combobox, "changed",
 		G_CALLBACK(gmdb_schema_backend_cb), NULL);
 	
 	/* set signals with user data, anyone know how to do this in glade? */
-	combobox = GTK_COMBO_BOX(glade_xml_get_widget(schemawin_xml, "table_combo"));
-	gtk_combo_box_append_text(combobox, ALL_TABLES);
+	combobox = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(schemawin_xml, "table_combo"));
+	gtk_combo_box_text_append_text(combobox, ALL_TABLES);
 	/* add all user tables in catalog to list */
 	for (i=0; i < mdb->num_catalog; i++) {
 		entry = g_ptr_array_index (mdb->catalog, i);
 		if (mdb_is_user_table(entry)) {
-			gtk_combo_box_append_text(combobox, entry->object_name);
+			gtk_combo_box_text_append_text(combobox, entry->object_name);
 		}
 	} /* for */
-	gtk_combo_box_set_active(combobox, 0);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(combobox), 0);
 
 	check_default_options();
 	refresh_available_options();

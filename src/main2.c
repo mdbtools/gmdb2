@@ -16,24 +16,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <gnome.h>
-#include <libgnome/gnome-help.h>
 #include "gmdb.h"
 
-GtkWidget *app;
-GladeXML *mainwin_xml;
+GSettings *settings;
+GtkBuilder *mainwin_xml;
+GtkWindow *gmdb;
 MdbSQL *sql;
-
-/* called when the user closes the window */
-static gint
-delete_event(GtkWidget *widget, GdkEvent *event, gpointer data)
-{
-	/* signal the main loop to quit */
-	gtk_main_quit();
-	/* return FALSE to continue closing the window */
-	return FALSE;
-}
-
 
 void
 gmdb_about_cb(GtkWidget *button, gpointer data)
@@ -44,6 +32,7 @@ const gchar *authors[] = {
 	"Filip Van Raemdonck",
 	"Bernhard Reiter",
 	"Nirgal Vourgère",
+    "Evan Miller",
 	NULL
 };
 const gchar *documenters[] = {
@@ -57,7 +46,7 @@ guint32 licenselen;
 char *license = NULL;
 
 	parent = gtk_widget_get_toplevel (button);
-	if (!GTK_WIDGET_TOPLEVEL (parent))
+	if (!gtk_widget_is_toplevel(parent))
 		parent = NULL;
 
 	if (!pixbuf)
@@ -87,7 +76,7 @@ char *license = NULL;
 		"comments", _("GNOME MDB Viewer is a grapical interface to "
 			"MDB Tools. It lets you view and export data and schema "
 			"from MDB files produced by MS Access 97/2000/XP/2003/2007/2010."),
-		"copyright", _("Copyright 2002-2012 Brian Bruns and others"),
+		"copyright", _("Copyright 2002-2021 Brian Bruns and others"),
 		"documenters", documenters,
 		"logo", pixbuf,
 		"program-name", _("GNOME MDB Viewer"),
@@ -109,24 +98,9 @@ gmdb_info_cb(GtkWidget *button, gpointer data)
 	gmdb_info_new();
 }
 
-
-void
-gmdb_help_cb(GtkWidget *button, gpointer data)
-{
-	GError *error = NULL;
-
-	gnome_help_display("gmdb.xml", NULL, &error);
-	if (error != NULL) {
-		g_warning ("%s", error->message);
-		g_error_free (error);
-	}
-
-}
-
 void gmdb_load_recent_files()
 {
-GtkWidget *menuitem;
-GtkWidget *menulabel;
+GtkMenuItem *menuitem;
 char menuname[100];
 char cfgname[100];
 int i;
@@ -134,67 +108,74 @@ gchar *text, *text2;
 
 	for (i=4;i>=1;i--) {	
 		snprintf(menuname, sizeof(menuname), "menu_recent%d",i);
-		snprintf(cfgname, sizeof(cfgname), "/gmdb/RecentFiles/menu_recent%d.basename",i);
-		menuitem = glade_xml_get_widget (mainwin_xml, menuname);
-		menulabel = gtk_bin_get_child(GTK_BIN(menuitem));
-		text = gnome_config_get_string(cfgname);
-		if (!text) {
-			gtk_widget_hide(menuitem);
+		snprintf(cfgname, sizeof(cfgname), "recent%d-basename",i);
+		menuitem = GTK_MENU_ITEM(gtk_builder_get_object(mainwin_xml, menuname));
+		text = g_settings_get_string(settings, cfgname);
+		if (!text[0]) {
+			gtk_widget_hide(GTK_WIDGET(menuitem));
 		} else {
 			text2 = g_malloc(strlen(text)+4);
 			sprintf(text2,"%d. %s",i,text);
-			gtk_label_set_text(GTK_LABEL(menulabel),text2);
-			gtk_widget_show(menuitem);
+			gtk_menu_item_set_label(menuitem,text2);
+            gtk_widget_show(GTK_WIDGET(menuitem));
 			g_free(text2);
 		}
 		g_free(text);
 	}
 }
 
-int main(int argc, char *argv[]) 
-{
-GtkWidget *gmdb;
 
+static void gmdb_app_startup(GApplication *app, gpointer user_data) {
+    GError *error = NULL;
 #ifdef SQL
 	/* initialize the SQL engine */
 	sql = mdb_sql_init();
 #endif
 
-	/* Initialize GNOME */
-	/* Initialize gnome program */
-	gnome_program_init ("gmdb", VERSION,
-		LIBGNOMEUI_MODULE, argc, argv,
-		GNOME_PARAM_POPT_TABLE, NULL,
-		GNOME_PARAM_HUMAN_READABLE_NAME,
-		_("Gnome-MDB File Viewer"),
-		GNOME_PARAM_APP_DATADIR, DATADIR,
-		NULL);
-	//gnome_init ("gmdb", "0.2", argc, argv);
-	//app = gnome_app_new ("gmdb", "Gnome-MDB File Viewer");
-	glade_init();
-
+    settings = g_settings_new("mdbtools.gmdb2");
 	/* load the interface */
-	mainwin_xml = glade_xml_new(GMDB_GLADEDIR "gmdb.glade", NULL, NULL);
+	mainwin_xml = gtk_builder_new();
+    if (!gtk_builder_add_from_file(mainwin_xml, GMDB_UIDIR "gmdb.ui", &error)) {
+        g_warning("Error loading " GMDB_UIDIR "gmdb.ui: %s", error->message);
+        g_error_free(error);
+    }
 	/* connect the signals in the interface */
-	glade_xml_signal_autoconnect(mainwin_xml);
+	gtk_builder_connect_signals(mainwin_xml, NULL);
 
-	gmdb = glade_xml_get_widget (mainwin_xml, "gmdb");
-	gtk_signal_connect (GTK_OBJECT (gmdb), "delete_event",
-		GTK_SIGNAL_FUNC (delete_event), NULL);
-
-	if (argc>1) {
-		gmdb_file_open(argv[1]);
-	}
+	gmdb = GTK_WINDOW(gtk_builder_get_object(mainwin_xml, "gmdb"));
+    gtk_application_add_window(GTK_APPLICATION(app), gmdb);
 
 	gmdb_load_recent_files();
+}
 
-	/* start the event loop */
-	gtk_main();
-
+static void gmdb_app_shutdown(GApplication *app, gpointer user_data) {
 #ifdef SQL
 	/* free MDB Tools library */
 	mdb_sql_exit(sql);
 #endif
+}
 
-	return 0;
+static void gmdb_app_open(GApplication *app, GFile **files, gint n_files, const gchar *hint) {
+    gmdb_file_open(g_file_get_path(files[0]));
+    gtk_widget_show(GTK_WIDGET(gmdb));
+}
+
+static void gmdb_app_activate(GApplication *app, gpointer user_data) {
+    gtk_widget_show(GTK_WIDGET(gmdb));
+}
+
+int main(int argc, char *argv[])
+{
+GtkApplication *app = NULL;
+int status;
+
+    app = gtk_application_new("mdbtools.gmdb2", G_APPLICATION_HANDLES_OPEN);
+    g_signal_connect(app, "startup", G_CALLBACK(gmdb_app_startup), NULL);
+    g_signal_connect(app, "shutdown", G_CALLBACK(gmdb_app_shutdown), NULL);
+    g_signal_connect(app, "activate", G_CALLBACK(gmdb_app_activate), NULL);
+    g_signal_connect(app, "open", G_CALLBACK(gmdb_app_open), NULL);
+    status = g_application_run(G_APPLICATION(app), argc, argv);
+    g_object_unref(app);
+
+	return status;
 }

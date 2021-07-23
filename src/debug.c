@@ -19,12 +19,10 @@
 /* Objects attached to debug_window:
  *   GList *nav_list: list of pages viewed, entries are guint32 *'s
  *   guint *nav_elem: index to current page in nav_list
- *   GladeXML *debugwin_xml: the associated glade hierarchy
+ *   GtkBuilder *debugwin_xml: the associated builder object
  *   gboolean *dissect: whether dissecting is turned on
  */ 
 
-#include <gtk/gtkmessagedialog.h>
-#include <libgnome/gnome-i18n.h>
 #include "gmdb.h"
 
 extern MdbHandle *mdb;
@@ -34,17 +32,17 @@ GList *debug_list = NULL;
 #define LINESZ 77
 
 /* prototypes */
-static void gmdb_debug_init(MdbHandle *mdb, GladeXML *xml);
+static void gmdb_debug_init(MdbHandle *mdb, GtkBuilder *xml);
 static void gmdb_debug_text_on(GtkWidget *textbox, int start_byte, int end_byte);
 static void gmdb_debug_text_off(GtkWidget *textbox);
 static GtkTreeIter *gmdb_debug_add_item(GtkTreeStore *store, GtkTreeIter *iter, gchar *text, int start, int len);
-static void gmdb_debug_clear(GladeXML *xml);
+static void gmdb_debug_clear(GtkBuilder *xml);
 static void gmdb_debug_dissect(GtkTreeStore *store, char *fbuf, int offset, int len);
 static guint16 get_uint16(void *c);
 static guint32 get_uint32(void *c);
 static long gmdb_get_max_page(MdbHandle *mdb);
-static void gmdb_debug_display(GladeXML *xml, guint32 page);
-static void gmdb_debug_jump(GladeXML *xml, int msb);
+static void gmdb_debug_display(GtkBuilder *xml, guint32 page);
+static void gmdb_debug_jump(GtkBuilder *xml, int msb);
 
 /* value to string stuff */
 typedef struct GMdbValStr {
@@ -85,7 +83,7 @@ GMdbValStr object_types[] = {
 
 /* callbacks */
 static void
-gmdb_debug_select_cb(GtkTreeSelection *select, GladeXML *xml)
+gmdb_debug_select_cb(GtkTreeSelection *select, GtkBuilder *xml)
 {
 	int start_row, end_row;
 	int start_col, end_col;
@@ -97,7 +95,7 @@ gmdb_debug_select_cb(GtkTreeSelection *select, GladeXML *xml)
 
 	fprintf(stderr, "select_cb fired\n");
 
-	textview = glade_xml_get_widget (xml, "debug_textview");
+	textview = GTK_WIDGET(gtk_builder_get_object(xml, "debug_textview"));
 	gmdb_debug_text_off(textview);
 
 	if (!select)
@@ -151,20 +149,22 @@ gmdb_debug_forward_cb(GtkWidget *w, gpointer data)
 {
 	guint *nav_elem;
 	guint32 *page;
-	GladeXML *xml;
+	GtkBuilder *xml;
+    GtkWidget *win;
 	GList *nav_list;
 	guint num_items;
 
-	nav_list = g_object_get_data(G_OBJECT(w),"nav_list");
-	nav_elem = g_object_get_data(G_OBJECT(w),"nav_elem");
+	win = gtk_widget_get_toplevel(w);
+	nav_list = g_object_get_data(G_OBJECT(win),"nav_list");
+	nav_elem = g_object_get_data(G_OBJECT(win),"nav_elem");
 	num_items = g_list_length(nav_list);
 	if (!nav_elem || *nav_elem == num_items)
 		return;
 	(*nav_elem)++;
-	g_object_set_data(G_OBJECT(w), "nav_elem", nav_elem);
+	g_object_set_data(G_OBJECT(win), "nav_elem", nav_elem);
 	page = g_list_nth_data(nav_list,(*nav_elem) - 1);
 
-	xml = g_object_get_data(G_OBJECT(w), "debugwin_xml");
+	xml = g_object_get_data(G_OBJECT(win), "debugwin_xml");
 	gmdb_debug_display(xml, *page);
 }
 void
@@ -172,18 +172,20 @@ gmdb_debug_back_cb(GtkWidget *w, gpointer data)
 {
 	guint *nav_elem;
 	guint32 *page;
-	GladeXML *xml;
+	GtkBuilder *xml;
+    GtkWidget *win;
 	GList *nav_list;
 
-	nav_list = g_object_get_data(G_OBJECT(w),"nav_list");
-	nav_elem = g_object_get_data(G_OBJECT(w),"nav_elem");
+	win = gtk_widget_get_toplevel(w);
+	nav_list = g_object_get_data(G_OBJECT(win),"nav_list");
+	nav_elem = g_object_get_data(G_OBJECT(win),"nav_elem");
 	if (!nav_elem || *nav_elem==1)
 		return; /* at top of list already */
 	(*nav_elem)--;
-	g_object_set_data(G_OBJECT(w), "nav_elem", nav_elem);
+	g_object_set_data(G_OBJECT(win), "nav_elem", nav_elem);
 	page = g_list_nth_data(nav_list,(*nav_elem) - 1);
 	
-	xml = g_object_get_data(G_OBJECT(w), "debugwin_xml");
+	xml = g_object_get_data(G_OBJECT(win), "debugwin_xml");
 	gmdb_debug_display(xml, *page);
 }
 static void
@@ -225,15 +227,17 @@ gmdb_nav_add_page(GtkWidget *win, guint32 page_num)
 void
 gmdb_debug_jump_cb(GtkWidget *w, gpointer data)
 {
-	gmdb_debug_jump(g_object_get_data(G_OBJECT(w), "debugwin_xml"), 0);
+	GtkWidget *win = gtk_widget_get_toplevel(w);
+	gmdb_debug_jump(g_object_get_data(G_OBJECT(win), "debugwin_xml"), 0);
 }
 void
 gmdb_debug_jump_msb_cb(GtkWidget *w, gpointer data)
 {
-	gmdb_debug_jump(g_object_get_data(G_OBJECT(w), "debugwin_xml"), 1);
+	GtkWidget *win = gtk_widget_get_toplevel(w);
+	gmdb_debug_jump(g_object_get_data(G_OBJECT(win), "debugwin_xml"), 1);
 }
 static void
-gmdb_debug_jump(GladeXML *xml, int msb)
+gmdb_debug_jump(GtkBuilder *xml, int msb)
 {
 	GtkTextView *textview;
 	GtkTextBuffer *txtbuffer;
@@ -245,11 +249,13 @@ gmdb_debug_jump(GladeXML *xml, int msb)
 	gchar *hex_digit;
 	int i, num_digits = 0;
 
-	textview = (GtkTextView *) glade_xml_get_widget (xml, "debug_textview");
+	textview = GTK_TEXT_VIEW(gtk_builder_get_object(xml, "debug_textview"));
 	txtbuffer = gtk_text_view_get_buffer(textview);
 	if (!gtk_text_buffer_get_selection_bounds(txtbuffer, &start, &end)) {
-		/* FIX ME -- replace with text in status bar */
-		fprintf(stderr, "Nothing selected\n");
+        GtkStatusbar *statusbar = GTK_STATUSBAR(gtk_builder_get_object(xml, "statusbar1"));
+        gtk_statusbar_push(statusbar,
+                gtk_statusbar_get_context_id(statusbar, "Debug messages"),
+                "Nothing selected");
 		return;
 	}
 	text = g_strdup(gtk_text_buffer_get_text(txtbuffer, &start, &end, FALSE));
@@ -274,7 +280,7 @@ gmdb_debug_jump(GladeXML *xml, int msb)
 	}
 	g_free(text);
 	//fprintf(stderr, "going to page %s\n",page);
-	entry = glade_xml_get_widget (xml, "debug_entry");
+	entry = GTK_WIDGET(gtk_builder_get_object(xml, "debug_entry"));
 	gtk_entry_set_text(GTK_ENTRY(entry),page);
 	gmdb_debug_display_cb(entry, NULL);
 }
@@ -287,8 +293,9 @@ gmdb_debug_display_cb(GtkWidget *w, gpointer data)
 {
 	int page;
 	GtkWidget *win;
+    GtkEntry *entry;
 	gchar *s;
-	GladeXML *xml;
+	GtkBuilder *xml;
 
 	fprintf(stderr, "display fired\n");
 
@@ -296,8 +303,9 @@ gmdb_debug_display_cb(GtkWidget *w, gpointer data)
 
 	win = gtk_widget_get_toplevel(w);
 	xml = g_object_get_data(G_OBJECT(win), "debugwin_xml");
+    entry = GTK_ENTRY(gtk_builder_get_object(xml, "debug_entry"));
 	
-	s = g_strdup(gtk_entry_get_text(GTK_ENTRY(w)));
+	s = g_strdup(gtk_entry_get_text(entry));
 	if (!strncmp(s,"0x",2)) {
 		page = strtol(s+2, NULL, 16);
 	} else {
@@ -320,7 +328,7 @@ gmdb_debug_display_cb(GtkWidget *w, gpointer data)
 	gmdb_debug_display(xml, page);
 }
 static void
-gmdb_debug_display(GladeXML *xml, guint32 page)
+gmdb_debug_display(GtkBuilder *xml, guint32 page)
 {
 	char *fbuf;
 	char *tbuf;
@@ -333,14 +341,14 @@ gmdb_debug_display(GladeXML *xml, guint32 page)
 	GtkWidget *entry, *window;
 	char *pagestr;
 	gboolean *dissect;
-	GtkWidget *tree;
-	GtkTreeView *store;
+	GtkTreeView *tree;
+	GtkTreeStore *store;
 
-	textview = (GtkTextView *) glade_xml_get_widget (xml, "debug_textview");
+	textview = GTK_TEXT_VIEW(gtk_builder_get_object(xml, "debug_textview"));
 	gmdb_debug_clear(xml);
 
 	pagestr = g_strdup_printf("%lu", (unsigned long)page);
-	entry = glade_xml_get_widget (xml, "debug_entry");
+	entry = GTK_WIDGET(gtk_builder_get_object(xml, "debug_entry"));
 	gtk_entry_set_text(GTK_ENTRY(entry),pagestr);
 	g_free(pagestr);
 
@@ -372,13 +380,13 @@ gmdb_debug_display(GladeXML *xml, guint32 page)
 	gtk_text_buffer_get_iter_at_offset (buffer, &iter, 0);
 	gtk_text_buffer_insert(buffer,&iter,tbuf,strlen(tbuf));
 	
-	tree = glade_xml_get_widget(xml, "debug_treeview");
-	store = (GtkTreeView *) gtk_tree_view_get_model(GTK_TREE_VIEW(tree));
+	tree = GTK_TREE_VIEW(gtk_builder_get_object(xml, "debug_treeview"));
+	store = GTK_TREE_STORE(gtk_tree_view_get_model(tree));
 
-	window = glade_xml_get_widget(xml, "debug_window");
+	window = GTK_WIDGET(gtk_builder_get_object(xml, "debug_window"));
 	dissect = g_object_get_data(G_OBJECT(window),"dissect");
 	if (!dissect || *dissect)
-		gmdb_debug_dissect(GTK_TREE_STORE(store), fbuf, 0, mdb->fmt->pg_size);
+		gmdb_debug_dissect(store, fbuf, 0, mdb->fmt->pg_size);
 
 	g_free(fbuf);
 	g_free(tbuf);
@@ -899,17 +907,19 @@ gmdb_debug_dissect(GtkTreeStore *store, char *fbuf, int offset, int len)
 }
 
 static void
-gmdb_debug_clear(GladeXML *xml)
+gmdb_debug_clear(GtkBuilder *xml)
 {
 GtkTextBuffer *buffer;
-GtkWidget *treeview, *textview, *store;
+GtkTreeStore *store;
+GtkTreeView *treeview;
+GtkWidget *textview;
 
-	textview = glade_xml_get_widget (xml, "debug_textview");
-	treeview = glade_xml_get_widget (xml, "debug_treeview");
-	store = (GtkWidget *) gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
+	textview = GTK_WIDGET(gtk_builder_get_object(xml, "debug_textview"));
+	treeview = GTK_TREE_VIEW(gtk_builder_get_object(xml, "debug_treeview"));
+	store = GTK_TREE_STORE(gtk_tree_view_get_model(treeview));
 
 	/* clear the tree */ 
-	gtk_tree_store_clear(GTK_TREE_STORE(store));
+	gtk_tree_store_clear(store);
 
 	/* call delete text last because remove_node fires unselect signal */
 	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
@@ -960,14 +970,14 @@ gmdb_debug_text_off(GtkWidget *textbox)
 }
 
 static gint
-gmdb_debug_delete_cb(GtkWidget *w, GladeXML *xml)
+gmdb_debug_delete_cb(GtkWidget *w, GtkBuilder *xml)
 {
 	return FALSE;
 }
 void
 gmdb_debug_close_cb(GtkWidget *w, gpointer data)
 {
-	GladeXML *xml;
+	GtkBuilder *xml;
 
 	fprintf(stderr, "close fired\n");
 	xml = g_object_get_data(G_OBJECT(w), "debugwin_xml");
@@ -977,12 +987,12 @@ gmdb_debug_close_cb(GtkWidget *w, gpointer data)
 void
 gmdb_debug_close_all()
 {
-	GladeXML *xml;
+	GtkBuilder *xml;
 	GtkWidget *win;
 
 	fprintf(stderr, "close_all fired\n");
 	while ((xml = g_list_nth_data(debug_list, 0))) {
-		win = glade_xml_get_widget (xml, "debug_window");
+		win = GTK_WIDGET(gtk_builder_get_object(xml, "debug_window"));
 		debug_list = g_list_remove(debug_list, xml);
 		if (win) gtk_widget_destroy(win);
 	}
@@ -993,36 +1003,39 @@ gmdb_debug_new_cb(GtkWidget *w, gpointer data)
 {
 	GtkTextView *textview;
 	GtkWidget *entry, *debugwin;
-	GladeXML *debugwin_xml;
+	GtkBuilder *debugwin_xml;
 	GtkWidget *tree;
 	GtkTreeStore *store;
 	GtkCellRenderer *renderer;
 	GtkTreeViewColumn *column;
 	GtkTreeSelection *select;
+    GError *error = NULL;
 
 	/* load the interface */
-	debugwin_xml = glade_xml_new(GMDB_GLADEDIR "gmdb-debug.glade", NULL, NULL);
+	debugwin_xml = gtk_builder_new();
+    if (!gtk_builder_add_from_file(debugwin_xml, GMDB_UIDIR "gmdb-debug.ui", &error)) {
+        g_warning("Error adding " GMDB_UIDIR "gmdb-debug.ui: %s", error->message);
+        g_error_free(error);
+    }
 	/* connect the signals in the interface */
-	fprintf(stderr, "autoconnect signals\n");
-	glade_xml_signal_autoconnect(debugwin_xml);
+	gtk_builder_connect_signals(debugwin_xml, NULL);
 	
 	debug_list = g_list_append(debug_list, debugwin_xml);
 
 	/* set signals with user data, anyone know how to do this in glade? */
-	entry = glade_xml_get_widget (debugwin_xml, "debug_entry");
+	entry = GTK_WIDGET(gtk_builder_get_object(debugwin_xml, "debug_entry"));
 
-	debugwin = glade_xml_get_widget (debugwin_xml, "debug_window");
+	debugwin = GTK_WIDGET(gtk_builder_get_object(debugwin_xml, "debug_window"));
 	g_signal_connect (G_OBJECT (debugwin), "delete_event",
 		G_CALLBACK (gmdb_debug_delete_cb), debugwin_xml);
 	g_object_set_data (G_OBJECT (debugwin), "debugwin_xml", debugwin_xml);
 
 	/* this should be a preference, needs to be fixed width */
-	textview = (GtkTextView *) glade_xml_get_widget (debugwin_xml, "debug_textview");
-	gtk_widget_modify_font(GTK_WIDGET(textview), 
-		pango_font_description_from_string("Courier"));
+	textview = GTK_TEXT_VIEW(gtk_builder_get_object(debugwin_xml, "debug_textview"));
+    gtk_text_view_set_monospace(textview, TRUE);
 			                			                
 	/* set up treeview, libglade only gives us the empty widget */
-	tree = glade_xml_get_widget(debugwin_xml, "debug_treeview");
+	tree = GTK_WIDGET(gtk_builder_get_object(debugwin_xml, "debug_treeview"));
 	store = gtk_tree_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(tree), GTK_TREE_MODEL(store));
 
@@ -1061,27 +1074,27 @@ gmdb_debug_set_dissect_cb(GtkWidget *w, gpointer data)
 	*dissect = !(*dissect);
 	g_object_set_data(G_OBJECT(w), "dissect", dissect);
 }
-static void gmdb_debug_init(MdbHandle *mdb, GladeXML *xml)
+static void gmdb_debug_init(MdbHandle *mdb, GtkBuilder *xml)
 {
 	gchar *str;
 	GtkWidget *pglabel, *entry, *window, *textview;
 	GtkTextBuffer *buffer;
 	gboolean *dissect;
 
-	pglabel = glade_xml_get_widget (xml, "debug_num_label");
+	pglabel = GTK_WIDGET(gtk_builder_get_object(xml, "debug_num_label"));
 	str = g_strdup_printf("(0-%ld):", gmdb_get_max_page(mdb));
 	gtk_label_set_text(GTK_LABEL(pglabel), str);
 	g_free(str);
 
-	entry = glade_xml_get_widget (xml, "debug_entry");
+	entry = GTK_WIDGET(gtk_builder_get_object(xml, "debug_entry"));
 	gtk_widget_grab_focus(GTK_WIDGET(entry));
 
-	window = glade_xml_get_widget (xml, "debug_window");
+	window = GTK_WIDGET(gtk_builder_get_object(xml, "debug_window"));
 	dissect = g_malloc0(sizeof(guint));
 	*dissect = TRUE;
 	g_object_set_data(G_OBJECT(window), "dissect", dissect);
 
-	textview = glade_xml_get_widget (xml, "debug_textview");
+	textview = GTK_WIDGET(gtk_builder_get_object(xml, "debug_textview"));
 	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
 	gtk_text_buffer_create_tag (buffer, "debug_on",
 		"foreground", "white", "background", "blue", NULL);  

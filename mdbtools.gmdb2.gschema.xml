@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<schemalist>
+    <schema path="/mdbtools/gmdb2/" id="mdbtools.gmdb2">
+        <key name="maxrows" type="i">
+            <default>1000</default>
+        </key>
+        <key name="recent1-basename" type="s">
+            <default>""</default>
+        </key>
+        <key name="recent1-filepath" type="s">
+            <default>""</default>
+        </key>
+        <key name="recent2-basename" type="s">
+            <default>""</default>
+        </key>
+        <key name="recent2-filepath" type="s">
+            <default>""</default>
+        </key>
+        <key name="recent3-basename" type="s">
+            <default>""</default>
+        </key>
+        <key name="recent3-filepath" type="s">
+            <default>""</default>
+        </key>
+        <key name="recent4-basename" type="s">
+            <default>""</default>
+        </key>
+        <key name="recent4-filepath" type="s">
+            <default>""</default>
+        </key>
+    </schema>
+</schemalist>

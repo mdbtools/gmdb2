@@ -1,5 +1,5 @@
 
-appicondir = $(datadir)/gmdb/glade
+appicondir = $(datadir)/gmdb/ui
 
 appicon_DATA =		\
 	pk.xpm		\

@@ -33,7 +33,8 @@ GtkWidget *
 gmdb_info_new()
 {
 GtkWidget *propswin, *label;
-GladeXML *propswin_xml;
+GtkBuilder *propswin_xml;
+GError *error = NULL;
 gchar title[100];
 gchar tmpstr[20];
 struct stat st;
@@ -41,18 +42,22 @@ char* version;
 MdbCatalogEntry *entry = mdb_get_catalogentry_by_name(mdb, "SummaryInfo");
 
 	/* load the interface */
-	propswin_xml = glade_xml_new(GMDB_GLADEDIR "gmdb-props.glade", NULL, NULL);
+	propswin_xml = gtk_builder_new();
+    if (!gtk_builder_add_from_file(propswin_xml, GMDB_UIDIR "gmdb-props.ui", &error)) {
+        g_warning("Error loading " GMDB_UIDIR "gmdb-props.ui: %s", error->message);
+        g_error_free(error);
+    }
 	/* connect the signals in the interface */
-	glade_xml_signal_autoconnect(propswin_xml);
+	gtk_builder_connect_signals(propswin_xml, NULL);
 	
-	propswin = glade_xml_get_widget (propswin_xml, "props_dialog");
+	propswin = GTK_WIDGET(gtk_builder_get_object(propswin_xml, "props_dialog"));
 	g_snprintf(title, sizeof(title), "%s Properties", mdb_filename);
 	gtk_window_set_title(GTK_WINDOW(propswin), title);
 		
-	label = glade_xml_get_widget (propswin_xml, "props_filename");
+	label = GTK_WIDGET(gtk_builder_get_object(propswin_xml, "props_filename"));
 	gtk_label_set_text(GTK_LABEL(label), mdb_filename);
 		
-	label = glade_xml_get_widget (propswin_xml, "props_jetver");
+	label = GTK_WIDGET(gtk_builder_get_object(propswin_xml, "props_jetver"));
 	switch(mdb->f->jet_version) {
 	case MDB_VER_JET3:
 		version = "3 (Access 97)";
@@ -77,20 +82,20 @@ MdbCatalogEntry *entry = mdb_get_catalogentry_by_name(mdb, "SummaryInfo");
 	}
 	gtk_label_set_text(GTK_LABEL(label), version);
 
-	label = glade_xml_get_widget (propswin_xml, "props_encrypted");
+	label = GTK_WIDGET(gtk_builder_get_object(propswin_xml, "props_encrypted"));
 	gtk_label_set_text(GTK_LABEL(label), mdb->f->db_key ? "Yes" : "No");	
 
 	assert( fstat(fileno(mdb->f->stream), &st)!=-1 );
 	snprintf(tmpstr, sizeof(tmpstr), "%zd K", (size_t)(st.st_size/1024));
-	label = glade_xml_get_widget (propswin_xml, "props_filesize");
+	label = GTK_WIDGET(gtk_builder_get_object(propswin_xml, "props_filesize"));
 	gtk_label_set_text(GTK_LABEL(label), tmpstr);	
 		
 	snprintf(tmpstr, sizeof(tmpstr), "%zd", (size_t)(st.st_size / mdb->fmt->pg_size));
-	label = glade_xml_get_widget (propswin_xml, "props_numpages");
+	label = GTK_WIDGET(gtk_builder_get_object(propswin_xml, "props_numpages"));
 	gtk_label_set_text(GTK_LABEL(label), tmpstr);	
 
 	snprintf(tmpstr, sizeof(tmpstr), "%d", mdb->num_catalog);
-	label = glade_xml_get_widget (propswin_xml, "props_numobjs");
+	label = GTK_WIDGET(gtk_builder_get_object(propswin_xml, "props_numobjs"));
 	gtk_label_set_text(GTK_LABEL(label), tmpstr);	
 
 	if (entry && entry->props && entry->props->len)
@@ -101,17 +106,17 @@ MdbCatalogEntry *entry = mdb_get_catalogentry_by_name(mdb, "SummaryInfo");
 		
 		propval = g_hash_table_lookup(props->hash, "Title");
 		if (propval) {
-			label = glade_xml_get_widget (propswin_xml, "props_title");
+			label = GTK_WIDGET(gtk_builder_get_object(propswin_xml, "props_title"));
 			gtk_label_set_text(GTK_LABEL(label), propval);
 		}
 		propval = g_hash_table_lookup(props->hash, "Company");
 		if (propval) {
-			label = glade_xml_get_widget (propswin_xml, "props_company");
+			label = GTK_WIDGET(gtk_builder_get_object(propswin_xml, "props_company"));
 			gtk_label_set_text(GTK_LABEL(label), propval);
 		}
 		propval = g_hash_table_lookup(props->hash, "Author");
 		if (propval) {
-			label = glade_xml_get_widget (propswin_xml, "props_author");
+			label = GTK_WIDGET(gtk_builder_get_object(propswin_xml, "props_author"));
 			gtk_label_set_text(GTK_LABEL(label), propval);
 		}
 	}
