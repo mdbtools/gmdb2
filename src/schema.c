@@ -121,6 +121,7 @@ int i;
 	//printf("%s %s %02X\n",tabname,backend,export_options);
 
 	gmdb_schema_export(file_path);
+    gtk_widget_destroy(schemawin);
 }
 static void
 check_default_options() {
