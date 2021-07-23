@@ -37,8 +37,8 @@
 static void update_bottom_properties(GtkTreeView *treeview, GtkBuilder *xml);
 
 typedef struct GMdbDefWindow {
-    gchar table_name[MDB_MAX_OBJ_NAME];
     GtkWidget *window;
+    gchar table_name[MDB_MAX_OBJ_NAME+1];
 } GMdbDefWindow;
 
 static GList *window_list;
