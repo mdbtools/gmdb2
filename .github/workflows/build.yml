@@ -9,7 +9,7 @@ jobs:
         compiler: [ clang, gcc-9, gcc-10 ]
     steps:
       - name: Install packages
-        run: sudo apt install libgtk-3-dev gettext
+        run: sudo apt install libgtk-3-dev gettext yelp-tools
       - uses: actions/checkout@v2
       - name: Autoconf
         run: autoreconf -i -f
