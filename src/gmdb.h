@@ -13,6 +13,10 @@
 #include <mdbtools.h>
 #include <mdbsql.h>
 
+#ifndef HAVE_G_MEMDUP2
+#define g_memdup2(p, sz) g_memdup(p, sz)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

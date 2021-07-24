@@ -88,7 +88,8 @@ fi
 AC_SUBST(GTK3_CFLAGS)
 AC_SUBST(GTK3_LIBS)
 
-AC_DEFINE(HAVE_GLIB, 1, [glib check])
+AC_DEFINE([HAVE_GLIB], [1], [glib check])
+AC_CHECK_LIB(glib-2.0, g_memdup2, [AC_DEFINE([HAVE_G_MEMDUP2], [1], [g_memdup2 check])])
 
 GLIB_GSETTINGS
 

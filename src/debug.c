@@ -217,7 +217,7 @@ gmdb_nav_add_page(GtkWidget *win, guint32 page_num)
 		}
 	}
 
-	nav_list = g_list_append(nav_list, g_memdup(&page_num, 4));
+	nav_list = g_list_append(nav_list, g_memdup2(&page_num, 4));
 	*nav_elem = g_list_length(nav_list);
 
 	g_object_set_data(G_OBJECT(win), "nav_list", nav_list);
