@@ -31,7 +31,9 @@ jobs:
         compiler: [ clang, gcc ]
     steps:
       - name: Install packages
-        run: brew install mdbtools gawk automake gtk+3 gettext yelp-tools itstool
+        run: brew install mdbtools gawk automake gtk+3 yelp-tools itstool
+      - name: Fix mdbtools 0.9.3 installation
+        run: rm /usr/local/lib/pkgconfig/libmdbsql.pc
       - uses: actions/checkout@v2
       - name: Autoconf
         run: autoreconf -i -f
