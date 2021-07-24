@@ -17,6 +17,7 @@
  */
 
 #include "gmdb.h"
+#include <libgen.h>
 
 MdbHandle *mdb;
 gchar *mdb_filename;
@@ -94,12 +95,7 @@ int i, index=0;
 static void
 gmdb_file_add_recent(gchar *file_path)
 {
-	gchar basename[256];
-	int i;
-
-	for (i=strlen(file_path);i>=0 && file_path[i]!='/';i--);
-    snprintf(basename, sizeof(basename), "%s", file_path[i] == '/' ? &file_path[i+1] : file_path);
-	g_settings_set_string(settings, "recent1-basename", basename);
+	g_settings_set_string(settings, "recent1-basename", basename(file_path));
 	g_settings_set_string(settings, "recent1-filepath", file_path);
 	g_settings_sync();
 }
