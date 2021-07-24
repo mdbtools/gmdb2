@@ -98,6 +98,12 @@ gmdb_info_cb(GtkWidget *button, gpointer data)
 	gmdb_info_new();
 }
 
+void
+gmdb_help_cb(GtkWidget *button, gpointer data)
+{
+    gtk_show_uri_on_window(gmdb, "help:gmdb2", GDK_CURRENT_TIME, NULL);
+}
+
 void gmdb_load_recent_files()
 {
 GtkMenuItem *menuitem;

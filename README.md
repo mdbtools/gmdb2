@@ -10,7 +10,7 @@ This is the official GUI for [mdbtools](https://github.com/mdbtools/mdbtools). I
 
 This standalone package is considered beta-quality software.
 
-Building from source requires autotools:
+Building from source requires autotools, gettext, and yelp-tools:
 
 * autoreconf -f -i
 * ./configure

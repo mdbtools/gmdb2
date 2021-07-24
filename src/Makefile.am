@@ -1,4 +1,4 @@
-SUBDIRS = uifiles pixmaps
+SUBDIRS = help uifiles pixmaps
 bin_PROGRAMS = gmdb2
 include_HEADERS = gmdb.h
 

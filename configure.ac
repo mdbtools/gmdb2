@@ -23,6 +23,7 @@ AC_C_CONST
 AC_TYPE_SIZE_T
 
 AM_ICONV
+YELP_HELP_INIT
 
 dnl ---------------------------------------------------------------------
 dnl Compile time options
@@ -78,9 +79,9 @@ fi
 AC_SUBST(MDBTOOLS_CFLAGS)
 AC_SUBST(MDBTOOLS_LIBS)
 
-dnl check for gtk/gnome
+dnl check for gtk3
 
-PKG_CHECK_MODULES([GTK3], [gtk+-3.0], HAVE_GTK3=true, HAVE_GTK3=false)
+PKG_CHECK_MODULES([GTK3], [gtk+-3.0 >= 3.22], HAVE_GTK3=true, HAVE_GTK3=false)
 if test "x$HAVE_GTK3" != "xtrue"; then
     AC_MSG_ERROR([Could not find GTK3 libraries, which are required to build gmdb2.])
 fi
@@ -110,7 +111,8 @@ Makefile
 doc/Makefile
 src/Makefile
 src/uifiles/Makefile
-src/pixmaps/Makefile])
+src/pixmaps/Makefile
+src/help/Makefile])
 AC_OUTPUT
 
 ##################################################

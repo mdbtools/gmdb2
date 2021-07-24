@@ -71,7 +71,6 @@ extern GtkWidget *gmdb_prefs_new(void);
 /* schema.c */
 void gmdb_schema_new_cb(GtkWidget *w, gpointer data);
 void gmdb_schema_export_cb(GtkWidget *w, gpointer data);
-void gmdb_schema_help_cb(GtkWidget *w, gpointer data);
 
 /* table.c */
 void gmdb_table_debug_cb(GtkContainer *list, GtkWidget *w, gpointer data);
@@ -91,13 +90,12 @@ void gmdb_export_get_escapechar(GtkBuilder *xml, gchar *escapechar, int max_buf)
 int gmdb_export_get_binmode(GtkBuilder *xml);
 int gmdb_export_get_headers(GtkBuilder *xml);
 gchar *gmdb_export_get_filepath(GtkBuilder *xml);
-void gmdb_export_help_cb(GtkWidget *w, gpointer data);
 void gmdb_table_export_button_cb(GtkWidget *w, gpointer data);
 
 extern MdbSQL *sql;
 
 #ifdef __cplusplus
-extern "C" {
+}
 #endif /* __cplusplus */
 
 #endif

@@ -1,7 +1,5 @@
-include $(top_srcdir)/gnome-doc-utils.make
-dist-hook: doc-dist-hook
+@YELP_HELP_RULES@
 
-DOC_MODULE = gmdb
-DOC_ENTITIES = legal.xml
-DOC_FIGURES = figures/gmdb2_window.png figures/gmdb2_sql_window.png
-#DOC_LINGUAS = es sr uk
+HELP_ID = gmdb2
+HELP_FILES = index.docbook legal.xml
+HELP_MEDIA = figures/gmdb2_window.png figures/gmdb2_sql_window.png
