@@ -31,7 +31,7 @@ jobs:
         compiler: [ clang, gcc ]
     steps:
       - name: Install packages
-        run: brew install mdbtools gtk+3 gettext yelp-tools
+        run: brew install mdbtools automake gtk+3 gettext yelp-tools
       - uses: actions/checkout@v2
       - name: Autoconf
         run: autoreconf -i -f
