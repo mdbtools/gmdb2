@@ -23,3 +23,21 @@ jobs:
           CC: ${{ matrix.compiler }}
       - name: Make
         run: make distcheck
+  macos:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [ clang, gcc ]
+    steps:
+      - name: Install packages
+        run: brew install mdbtools gtk+3 gettext yelp-tools
+      - uses: actions/checkout@v2
+      - name: Autoconf
+        run: autoreconf -i -f
+      - name: Configure
+        run: ./configure --disable-silent-rules
+        env:
+          CC: ${{ matrix.compiler }}
+      - name: Make
+        run: make distcheck
