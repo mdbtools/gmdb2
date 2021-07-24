@@ -6,7 +6,7 @@ gmdb2
 This is the official GUI for [mdbtools](https://github.com/mdbtools/mdbtools). It requires:
 
 * mdbtools 0.9.0 or later
-* GTK+ 3.0 or later
+* GTK+ 3.22 or later
 
 This standalone package is considered beta-quality software.
 
