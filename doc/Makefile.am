@@ -8,7 +8,7 @@ if ENABLE_MAN
   dist_man_MANS += gmdb2.1
 endif
 CLEANFILES = ${dist_man_MANS}
-EXTRA_DIST	= gmdb2.txt
+EXTRA_DIST	= gmdb2.txt txt2man
 
 .txt.1:
 	$(TXT2MAN) -t $* -r "$(PRODUCT) $(VERSION)" -s 1 -v "Executable programs or shell commands" $(srcdir)/$< > $@
