@@ -380,6 +380,7 @@
                           <object class="GtkButton" id="table_definition">
                             <property name="label" translatable="yes">Definition</property>
                             <property name="visible">True</property>
+                            <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="use_underline">True</property>
@@ -395,6 +396,7 @@
                           <object class="GtkButton" id="table_data">
                             <property name="label" translatable="yes">Data</property>
                             <property name="visible">True</property>
+                            <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="use_underline">True</property>
@@ -410,6 +412,7 @@
                           <object class="GtkButton" id="table_export">
                             <property name="label" translatable="yes">Export</property>
                             <property name="visible">True</property>
+                            <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="use_underline">True</property>
