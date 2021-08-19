@@ -14,11 +14,10 @@ AC_PROG_MAKE_SET
 m4_pattern_allow([AM_PROG_AR], [AM_PROG_AR])
 LT_INIT([win32-dll])
 
-dnl Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-AC_TYPE_SIZE_T
-
+dnl Define HAVE_ICONV so that libmdb 0.9.x is correctly linked
 AM_ICONV
+
+dnl Configure the help system
 YELP_HELP_INIT
 
 dnl ---------------------------------------------------------------------
