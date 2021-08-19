@@ -682,7 +682,7 @@ gmdb_debug_dissect_tabledef_pg4(GtkTreeStore *store, char *fbuf, int offset, int
 	gchar *str;
 	guint32 i, num_idx, num_cols, idx_entries;
 	int newbase, infobase;
-	GtkTreeIter *container;
+	GtkTreeIter *container = NULL;
 	char *foff = fbuf + offset;
 
 	str = g_strdup_printf("Next TDEF Page: 0x%06x (%lu)",
