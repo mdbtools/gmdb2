@@ -73,13 +73,13 @@ char *license = NULL;
 
   	gtk_show_about_dialog ((GtkWindow*)parent,
    		"authors", authors,
-		"comments", _("GNOME MDB Viewer is a grapical interface to "
+		"comments", _(PACKAGE_NAME " is a grapical interface to "
 			"MDB Tools. It lets you view and export data and schema "
 			"from MDB files produced by MS Access 97/2000/XP/2003/2007/2010."),
 		"copyright", _("Copyright 2002-2021 Brian Bruns and others"),
 		"documenters", documenters,
 		"logo", pixbuf,
-		"program-name", _("GNOME MDB Viewer"),
+		"program-name", PACKAGE_NAME,
 		"version", PACKAGE_VERSION,
 		"website", PACKAGE_URL,
 		"license", license,
