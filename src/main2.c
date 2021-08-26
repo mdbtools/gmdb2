@@ -175,6 +175,10 @@ int main(int argc, char *argv[])
 GtkApplication *app = NULL;
 int status;
 
+    if (argc == 2 && (!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version"))) {
+        printf(PACKAGE_NAME " " PACKAGE_VERSION "\n");
+        return 0;
+    }
     app = gtk_application_new("mdbtools.gmdb2", G_APPLICATION_HANDLES_OPEN);
     g_signal_connect(app, "startup", G_CALLBACK(gmdb_app_startup), NULL);
     g_signal_connect(app, "shutdown", G_CALLBACK(gmdb_app_shutdown), NULL);
